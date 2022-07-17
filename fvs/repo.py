@@ -6,6 +6,7 @@ import logging
 from fvs.exceptions import FVSNothingToCommit, FVSEmptyCommitMessage, FVSStateNotFound, FVSMissingStateIndex
 from fvs.pattern import FVSPattern
 from fvs.state import FVSState
+from fvs.utils import FVSUtils
 
 logger = logging.getLogger("fvs.repo")
 
@@ -104,7 +105,7 @@ class FVSRepo:
             for file in files:
                 _full_path = os.path.join(root, file)
                 _relative_path = self.__get_relative_path(file)
-                _md5 = hashlib.md5(_full_path.encode()).hexdigest()
+                _md5 = FVSUtils.get_md5_hash(_full_path)
                 unstaged_relative_paths.append(_relative_path)
 
                 if not self.__has_no_states and self.__active_state.has_file(file, _md5):
