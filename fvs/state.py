@@ -45,7 +45,7 @@ class FVSState:
             raise FVSStateNotFound(state_id)
 
         with open(os.path.join(self.__state_path, "files.yml"), "r") as f:
-            self.__files = yaml.safe_load(f)
+            self.__files = yaml.safe_load(f)["files"]
     
     def commit(
         self,
