@@ -45,7 +45,7 @@ class FVSState:
             raise FVSStateNotFound(state_id)
 
         with open(os.path.join(self.__state_path, "files.yml"), "r") as f:
-            self.__files = yaml.safe_load(f)["files"]
+            self.__files = yaml.safe_load(f)
     
     def commit(
         self,
@@ -139,7 +139,7 @@ class FVSState:
         """
         state_path = self.__repo.new_state_path_by_id(self.__state_id)
         with open(os.path.join(state_path, "files.yml"), "w") as f:
-            yaml.dump({"files": self.__files}, f, sort_keys=False)
+            yaml.dump(self.__files, f, sort_keys=False)
     
     def has_file(self, file_name:str, md5:str):
         """
