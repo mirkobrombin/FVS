@@ -7,7 +7,7 @@ logger = logging.getLogger("fvs.file")
 
 class FVSFile:
 
-    def __init__(self, repo, file_name, md5, relative_path):
+    def __init__(self, repo: 'FVSRepo', file_name: str, md5: str, relative_path: str):
         self.__repo = repo
         self.__file_name = file_name
         self.__md5 = md5
@@ -23,7 +23,7 @@ class FVSFile:
             "relative_path": self.__relative_path
         }
 
-    def copy_to(self, dest, use_md5_as_name=True):
+    def copy_to(self, dest: str, use_md5_as_name: bool=True):
         """
         This method opy the file to the given destination. Despite it looks 
         flexible, it is meant to be used only by FVSData to copy files to 

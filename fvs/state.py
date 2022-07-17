@@ -14,17 +14,15 @@ logger = logging.getLogger("fvs.state")
 
 class FVSState:
     __files: dict = None
-    __state_id = None
-    __state_path = None
+    __state_id: int = None
+    __state_path: str = None
 
     def __init__(self, repo:'FVSRepo', state_id: int = None):
         self.__repo = repo
+        self.__files = {"count": 0, "added": {}, "modified": {}, "removed": {}, "relative_paths_in_state": []}
         
         if state_id is not None:
             self.__load_state(state_id)
-        
-        if self.__files is None:
-            self.__files = {"count": 0, "added": {}, "modified": {}, "removed": {}, "relative_paths_in_state": []}
     
     @classmethod
     def load(cls, repo:'FVSRepo', state_id:int):
@@ -78,7 +76,7 @@ class FVSState:
         """
         To avoid further investigation and multiple checks, we will check
         for the unstaged files dict structure. It must contain the following
-        keys: added, edited, removed.
+        keys: added, modified, removed.
         """
         if False in [
             unstaged_files.get("count"),
@@ -153,13 +151,7 @@ class FVSState:
         """
         This method will check if the state has the given relative path.
         """
-        if relative_path in [
-            self.__files["added"][md5]["relative_path"]
-            for md5 in self.__files["added"]
-        ] or relative_path in [
-            self.__files["modified"][md5]["relative_path"]
-            for md5 in self.__files["modified"]
-        ]:
+        if relative_path in self.__files["relative_paths_in_state"]:
             return True
         return False
 

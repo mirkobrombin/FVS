@@ -11,7 +11,7 @@ logger = logging.getLogger("fvs.data")
 class FVSData:
     __data_conf: dict = None
     __data_conf_path: str = None
-    __data_int_paths = [
+    __data_int_paths: list = [
         "a","b","c","d","e","f","g","h","i","j","k","l","m",
         "n","o","p","q","r","s","t","u","v","w","x","y","z",
         "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "-"
@@ -19,7 +19,7 @@ class FVSData:
     __state:'FVSState' = None
     __transaction: list = None
 
-    def __init__(self, repo, state=None):
+    def __init__(self, repo: 'FVSRepo', state: 'FVSState'=None):
         """
         Initialize the FVSData.
         """
@@ -83,7 +83,7 @@ class FVSData:
 
         self.__save_config()
     
-    def get_int_path(self, file_name):
+    def get_int_path(self, file_name: str):
         """
         This simple method determines the internal path of a file based
         on the first letter of the file name. Every file starting with

@@ -11,9 +11,9 @@ logger = logging.getLogger("fvs.repo")
 
 class FVSRepo:
     __repo_conf: dict = None
-    __has_no_states = False
+    __has_no_states: bool = False
 
-    def __init__(self, repo_path):
+    def __init__(self, repo_path: str):
         """
         Initialize the FVSRepo.
         """
@@ -132,7 +132,7 @@ class FVSRepo:
 
         return unstaged_files
     
-    def commit(self, message, ignore:list=None):
+    def commit(self, message: str, ignore: list=None):
         """
         Commit the current state. This is a wrapper around the commit method
         of the FVSState class. A wrapper is used to store the state message
@@ -160,14 +160,14 @@ class FVSRepo:
         self.__update_repo()
         return state
 
-    def restore(self, state_id):
+    def restore(self, state_id: int):
         """
         Restore the state with the given id.
         """
         print("Not implemented yet.")
         return
     
-    def is_valid_state(self, state_id):
+    def is_valid_state(self, state_id: int):
         """
         Check if the state with the given id is valid.
         ...
@@ -192,7 +192,7 @@ class FVSRepo:
 
         return True
     
-    def __get_relative_path(self, path):
+    def __get_relative_path(self, path: str):
         """
         Get the relative path of the given files.
         """
@@ -201,7 +201,7 @@ class FVSRepo:
             path
         )
 
-    def get_state_path(self, state_id):
+    def get_state_path(self, state_id: int):
         """
         Get the path of the state with the given id.
         """
@@ -220,7 +220,7 @@ class FVSRepo:
         if self.__has_no_states:
             self.__has_no_states = False
     
-    def new_state_path_by_id(self, state_id):
+    def new_state_path_by_id(self, state_id: int):
         """
         Get the path of the state with the given id.
         ...

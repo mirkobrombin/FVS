@@ -3,7 +3,7 @@ class FVSException(Exception):
     Base class for all FVS exceptions.
     """
     
-    def __init__(self, message="An unknown error occurred."):
+    def __init__(self, message: str="An unknown error occurred."):
         super().__init__(message)
 
 
@@ -12,7 +12,7 @@ class FVSStateNotFound(FVSException):
     Exception raised when a state is not found.
     """
     
-    def __init__(self, state_id:int):
+    def __init__(self, state_id: int):
         super().__init__("No state found for ID: {}".format(state_id))
 
 
@@ -21,7 +21,7 @@ class FVSEmptyStateIndex(FVSException):
     Exception raised when the state index is empty.
     """
     
-    def __init__(self, state_id:int):
+    def __init__(self, state_id: int):
         super().__init__("Index is empty for state ID: {}".format(state_id))
 
 
@@ -30,7 +30,7 @@ class FVSMissingStateIndex(FVSException):
     Exception raised when a state index is not found.
     """
     
-    def __init__(self, state_id:int):
+    def __init__(self, state_id: int):
         super().__init__("State index not found for state with ID: {}".format(state_id))
 
 
@@ -75,7 +75,7 @@ class FVSCallerWrongClass(FVSException):
     Exception raised when the caller is not the expected class.
     """
     
-    def __init__(self, cls="FVSRepo"):
+    def __init__(self, cls: str="FVSRepo"):
         super().__init__("Caller is not the expected class: {}".format(cls))
 
 
