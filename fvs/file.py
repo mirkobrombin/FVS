@@ -2,9 +2,10 @@ import os
 import shutil
 import logging
 
-
 logger = logging.getLogger("fvs.file")
 
+
+# noinspection DuplicatedCode
 class FVSFile:
 
     def __init__(self, repo: 'FVSRepo', file_name: str, md5: str, relative_path: str):
@@ -13,9 +14,9 @@ class FVSFile:
         self.__md5 = md5
         self.__relative_path = relative_path
 
-    def is_equal(self, file:'FVSFile'):
+    def is_equal(self, file: 'FVSFile'):
         return self.__md5 == file.get_md5()
-    
+
     def as_dict(self):
         return {
             "file_name": self.__file_name,
@@ -23,7 +24,7 @@ class FVSFile:
             "relative_path": self.__relative_path
         }
 
-    def copy_to(self, dest: str, use_md5_as_name: bool=True):
+    def copy_to(self, dest: str, use_md5_as_name: bool = True):
         """
         This method opy the file to the given destination. Despite it looks 
         flexible, it is meant to be used only by FVSData to copy files to 
@@ -63,7 +64,7 @@ class FVSFile:
                 follow_symlinks=False
             )
 
-    def remove(self, path: str, use_md5_as_name: bool=True):
+    def remove(self, path: str, use_md5_as_name: bool = True):
         """
         This method will remove the file from the internal data directory.
         """
@@ -71,13 +72,13 @@ class FVSFile:
             file_path = os.path.join(path, self.__md5)
         else:
             file_path = os.path.join(path, self.__file_name)
-            
+
         if os.path.exists(file_path):
             logger.debug(f"removing file {self.__file_name} from {path}")
             os.remove(file_path)
         else:
             logger.debug(f"file {self.__file_name} does not exist, data catalog may be corrupted.")
-    
+
     def restore(self, internal_path: str):
         """
         This method will restore the file, copying from the internal data
@@ -97,11 +98,11 @@ class FVSFile:
     @property
     def file_name(self):
         return self.__file_name
-    
+
     @property
     def md5(self):
         return self.__md5
-    
+
     @property
     def relative_path(self):
         return self.__relative_path

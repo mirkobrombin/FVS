@@ -1,11 +1,10 @@
 import os
 import yaml
 import shutil
-import hashlib
 import logging
 
-from fvs.exceptions import FVSNothingToCommit, FVSEmptyCommitMessage, FVSStateNotFound, FVSMissingStateIndex,\
-    FVSNothingToRestore
+from fvs.exceptions import FVSNothingToCommit, FVSEmptyCommitMessage, FVSStateNotFound, FVSMissingStateIndex, \
+    FVSNothingToRestore, FVSStateZeroNotDeletable, FVSEmptyStateIndex, FVSStateAlreadyExists
 from fvs.pattern import FVSPattern
 from fvs.state import FVSState
 from fvs.file import FVSFile
@@ -14,9 +13,11 @@ from fvs.utils import FVSUtils
 
 logger = logging.getLogger("fvs.repo")
 
+
 class FVSRepo:
     __repo_conf: dict = None
     __has_no_states: bool = False
+    __active_state: 'FVSState' = None
 
     def __init__(self, repo_path: str):
         """
@@ -26,7 +27,7 @@ class FVSRepo:
         self.__states_path = os.path.join(self.__repo_path, ".fvs/states")
         self.__update_fvs_path()
         self.__load_config()
-    
+
     def __update_fvs_path(self):
         """
         Update the path of the .fvs directory. This directory is not meant
@@ -40,9 +41,9 @@ class FVSRepo:
         ]
         repo_conf = os.path.join(self.__repo_path, ".fvs/repo.yml")
         updated = False
-        for dir in dirs:
-            if not os.path.exists(os.path.join(self.__repo_path, dir)):
-                os.makedirs(os.path.join(self.__repo_path, dir))
+        for _dir in dirs:
+            if not os.path.exists(os.path.join(self.__repo_path, _dir)):
+                os.makedirs(os.path.join(self.__repo_path, _dir))
                 updated = True
 
         if not os.path.exists(repo_conf):
@@ -50,10 +51,10 @@ class FVSRepo:
                 self.__repo_conf = {"id": -1, "states": {}}
                 yaml.dump(self.__repo_conf, f, sort_keys=False)
                 updated = True
-        
+
         if updated:
             logger.debug(f"FVS path updated for repository {self.__repo_path}")
-    
+
     def __load_config(self):
         """
         Load the repository configuration.
@@ -67,8 +68,8 @@ class FVSRepo:
             self.__active_state = FVSState(self, self.__repo_conf["id"])
         else:
             self.__has_no_states = True
-        
-    def get_unstaged_files(self, ignore: list = [], return_original_md5: bool = False):
+
+    def get_unstaged_files(self, ignore: list = None):
         """
         Get the unstaged files.
         """
@@ -79,10 +80,11 @@ class FVSRepo:
             "modified": [],
             "intact": []
         }
-        
+        active_state_files = {}
+
         if ignore is None:
             ignore = []
-        
+
         for root, dirs, files in os.walk(self.__repo_path):
             """
             Here we are excluding the .fvs/ directory from the unstaged files
@@ -90,7 +92,7 @@ class FVSRepo:
             """
             if ".fvs" in root:  # TODO: need to be improved
                 continue
-        
+
             """
             The following new variable is used to store all relative paths
             handled in the following loop. We will use them to list removed
@@ -127,8 +129,8 @@ class FVSRepo:
                 _relative_path = self.__get_relative_path(file)
                 _md5 = FVSUtils.get_md5_hash(_full_path)
                 _entry = {
-                    "file_name": file, 
-                    "md5": _md5, 
+                    "file_name": file,
+                    "md5": _md5,
                     "relative_path": _relative_path
                 }
                 unstaged_relative_paths.append(_relative_path)
@@ -145,10 +147,9 @@ class FVSRepo:
                 Assuming this is not the first state, we need to check if
                 the file is added, removed, modified or intact.
                 """
-                if self.__active_state.has_file(file, _md5):
+                if self.__active_state.has_file(_md5):
                     unstaged_files["intact"].append(_entry)
                     del_active_state_file_key(_md5)
-                    unstaged_files["count"] += 1
                 elif self.__active_state.has_relative_path(_relative_path):
                     unstaged_files["modified"].append(_entry)
                     del_active_state_file_key(_md5)
@@ -160,8 +161,8 @@ class FVSRepo:
                 unstaged_relative_paths.append(_relative_path)
 
             if not self.__has_no_states:
-                for file in list(active_state_files["added"].values()) +\
-                            list(active_state_files["modified"].values()) +\
+                for file in list(active_state_files["added"].values()) + \
+                            list(active_state_files["modified"].values()) + \
                             list(active_state_files["intact"].values()):
                     if file["relative_path"] not in unstaged_relative_paths:
                         unstaged_files["removed"].append({
@@ -172,8 +173,8 @@ class FVSRepo:
                         unstaged_files["count"] += 1
 
         return unstaged_files
-    
-    def commit(self, message: str, ignore: list=None):
+
+    def commit(self, message: str, ignore: list = None):
         """
         Commit the current state. This is a wrapper around the commit method
         of the FVSState class. A wrapper is used to store the state message
@@ -189,16 +190,16 @@ class FVSRepo:
         unstaged_files = self.get_unstaged_files(ignore)
         if unstaged_files["count"] == 0:
             raise FVSNothingToCommit()
-        
+
         # Create a new state
         state = FVSState(self)
-        state.commit(message, unstaged_files, ignore)
+        state.commit(message, unstaged_files)
         self.__states[state.state_id] = message
         self.__active_state = state
         self.__update_repo()
         return state
-    
-    def delete_state(self, state_id: int, update_repo: bool=True):
+
+    def delete_state(self, state_id: int, update_repo: bool = True):
         """
         Delete a state and all its subsequent states.
         ...
@@ -208,10 +209,10 @@ class FVSRepo:
         """
         if state_id == 0:
             raise FVSStateZeroNotDeletable()
-        
+
         if state_id not in self.__states:
             raise FVSStateNotFound(state_id)
-        
+
         """
         Traveling in the future is probably something we don't want to do. So
         we will break references for subsequent states too.
@@ -229,21 +230,21 @@ class FVSRepo:
 
             """
             Delete the state from the states folder. It should be safer now as
-            we already unreferenceed the state from all its files.
+            we already unreferenced the state from all its files.
             """
             self.__delete_state_folder(state)
             del self.__states[_state_id]
 
         if update_repo:
             self.__update_repo()
-    
+
     def delete_active_state(self):
         """
         Delete the active state.
         """
         self.delete_state(self.__active_state.state_id)
 
-    def restore_state(self, state_id: int, ignore: list=None):
+    def restore_state(self, state_id: int, ignore: list = None):
         """
         Restore the state with the given id. This will remove all unstaged
         files and restore the given state, deleting any subsequent states.
@@ -253,15 +254,15 @@ class FVSRepo:
 
         self.__active_state = FVSState(self, state_id)
         subsequent_state_id = self.__get_subsequent_state_id(state_id)
-        unstaged_files = self.get_unstaged_files(ignore, return_original_md5=True)
+        unstaged_files = self.get_unstaged_files(ignore)
 
         if unstaged_files["count"] == 0:
             raise FVSNothingToRestore()
 
         """
-        If the givven state has subsequent states, we need to delete them. The
+        If the given state has subsequent states, we need to delete them. The
         following call will start breaking references for the first subsequent
-        state, FVSData will take care of the rest, phisically deleting the
+        state, FVSData will take care of the rest, physically deleting the
         files when the reference count reaches 0 (no state references).
         """
         if subsequent_state_id is not None:
@@ -272,7 +273,7 @@ class FVSRepo:
         unstaged files.
         """
         fvs_data = FVSData(self)
-        
+
         for file in unstaged_files["added"]:
             _file_path = os.path.join(self.__repo_path, file["relative_path"])
             if os.path.isdir(_file_path):
@@ -289,13 +290,14 @@ class FVSRepo:
             FVSFile(self, file["file_name"], file["md5"], file["relative_path"]).restore(internal_path)
 
         self.__update_repo()
-    
-    def __delete_state_folder(self, state:FVSState):
+
+    @staticmethod
+    def __delete_state_folder(state: FVSState):
         """
         Delete the state folder with the given id.
         """
         shutil.rmtree(state.state_path)
-    
+
     def is_valid_state(self, state_id: int):
         """
         Check if the state with the given id is valid.
@@ -312,7 +314,7 @@ class FVSRepo:
 
         if not os.path.exists(index_path):
             raise FVSMissingStateIndex(state_id)
-        
+
         with open(index_path, "r") as f:
             index = yaml.safe_load(f)
 
@@ -320,7 +322,7 @@ class FVSRepo:
             raise FVSEmptyStateIndex(state_id)
 
         return True
-    
+
     def __get_prior_state_id(self, state_id: int):
         """
         Get the id of the prior state.
@@ -330,13 +332,13 @@ class FVSRepo:
         """
         if state_id not in self.__states.keys():
             raise FVSStateNotFound(state_id)
-        
+
         for key in self.__states.keys():
             if key < state_id:
                 return key
 
         return 0
-    
+
     def __get_subsequent_state_ids(self, state_id: int):
         """
         Get the ids of the subsequent states.
@@ -346,14 +348,14 @@ class FVSRepo:
         """
         if state_id not in self.__states.keys():
             raise FVSStateNotFound(state_id)
-        
+
         subsequent_states = []
         for key in self.__states.keys():
             if key > state_id:
                 subsequent_states.append(key)
 
         return subsequent_states
-    
+
     def __get_subsequent_state_id(self, state_id: int):
         """
         Get the id of the subsequent state.
@@ -363,13 +365,13 @@ class FVSRepo:
         """
         if state_id not in self.__states.keys():
             raise FVSStateNotFound(state_id)
-        
+
         for key in self.__states.keys():
             if key > state_id:
                 return key
 
         return 0
-    
+
     def __get_relative_path(self, path: str):
         """
         Get the relative path of the given files.
@@ -384,7 +386,7 @@ class FVSRepo:
         Get the path of the state with the given id.
         """
         return os.path.join(self.__states_path, str(state_id))
-    
+
     def __update_repo(self):
         """
         Update the repository configuration.
@@ -394,10 +396,10 @@ class FVSRepo:
             self.__repo_conf["id"] = self.__active_state.state_id
             self.__repo_conf["states"] = self.__states
             yaml.dump(self.__repo_conf, f, sort_keys=False)
-        
+
         if self.__has_no_states:
             self.__has_no_states = False
-    
+
     def new_state_path_by_id(self, state_id: int):
         """
         Get the path of the state with the given id.
@@ -410,21 +412,21 @@ class FVSRepo:
             raise FVSStateAlreadyExists(state_id)
         os.makedirs(state_path)
         return state_path
-    
+
     @property
     def repo_path(self):
         """
         Get the repository path.
         """
         return self.__repo_path
-    
+
     @property
     def states_path(self):
         """
         Get the path of the states.
         """
         return self.__states_path
-    
+
     @property
     def next_state_id(self):
         """
@@ -433,14 +435,14 @@ class FVSRepo:
         if self.__has_no_states:
             return 0
         return list(self.__states)[-1] + 1
-    
+
     @property
     def active_state(self):
         """
         Get the active state.
         """
         return self.__active_state
-    
+
     @property
     def states(self):
         """
