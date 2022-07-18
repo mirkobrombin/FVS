@@ -47,5 +47,5 @@ with open("test/test.ignore", "w") as f:
 repo.commit("My second state!", ignore=["*.ignore"])
 
 # restore the state 1
-repo.restore(1)
+repo.restore_state(1)
 ```
