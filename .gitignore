@@ -4,3 +4,4 @@ test/
 /env
 /venv
 /test*
+/.idea
