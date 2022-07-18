@@ -108,3 +108,12 @@ class FVSStateDataHasNoState(FVSException):
     def __init__(self):
         super().__init__("FVSData was initialized without a FVSState, \
 but a FVSState was expected to perform transactions.")
+
+
+class VFSTransactionAlreadyStarted(FVSException):
+    """
+    Exception raised when a transaction is already started.
+    """
+    
+    def __init__(self):
+        super().__init__("A different kind of transaction is already started.")
