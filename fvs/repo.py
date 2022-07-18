@@ -248,6 +248,10 @@ class FVSRepo:
         """
         Restore the state with the given id. This will remove all unstaged
         files and restore the given state, deleting any subsequent states.
+        ...
+        Raises:
+            FVSStateNotFound: If the state doesn't exist.
+            FVSNothingToRestore: If there are no unstaged files.
         """
         if state_id not in self.__states:
             raise FVSStateNotFound(state_id)
@@ -376,10 +380,7 @@ class FVSRepo:
         """
         Get the relative path of the given files.
         """
-        return os.path.join(
-            os.path.dirname(self.__repo_path),
-            path
-        )
+        return os.path.relpath(path, self.__repo_path)
 
     def get_state_path(self, state_id: int):
         """
@@ -437,11 +438,13 @@ class FVSRepo:
         return list(self.__states)[-1] + 1
 
     @property
-    def active_state(self):
+    def active_state_id(self):
         """
         Get the active state.
         """
-        return self.__active_state
+        if self.__active_state is None:
+            return None
+        return self.__active_state.state_id
 
     @property
     def states(self):
