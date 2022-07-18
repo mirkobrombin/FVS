@@ -7,4 +7,4 @@ test/
 /.idea
 /build
 /dist
-/fvs/*.egg-info
+*.egg-info
