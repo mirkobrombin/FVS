@@ -2,7 +2,7 @@
 File Versioning System with hash comparison and data storage to create unlinked 
 states that can be deleted
 
-> ⚠️ This is a work in progress.
+> ⚠️ This is currently a Beta.
 
 ### Why FVS?
 The main reason for this project is for the purpose of personal knowledge and 
@@ -43,13 +43,3 @@ with open("test/test.ignore", "w") as f:
 # commit the changes ignoring files with .ignore extension
 repo.commit("My second state!", ignore=["*.ignore"])
 ```
-
-### What is working
-- creating new repository
-- committing changes / creating states
-- patterns to ignore files
-- storing data with deduplication
-- deleting states
-
-### What is not working yet
-- restoring states
