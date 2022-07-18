@@ -127,3 +127,12 @@ class FVSWrongSortBy(FVSException):
     def __init__(self, allowed_sort_by: list):
         super().__init__("The sort_by parameter is not correct. \
 It should be one of the following: {}".format(allowed_sort_by))
+
+
+class FVSNothingToRestore(FVSException):
+    """
+    Exception raised when there is nothing to restore.
+    """
+    
+    def __init__(self):
+        super().__init__("Nothing to restore.")

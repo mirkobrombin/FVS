@@ -184,7 +184,7 @@ class FVSState:
             return False
         return True
     
-    def get_file_from_name(self, file_name:str, key:str = "added"):
+    def get_file_from_relative_path(self, relative_path:str, key:str = "added"):
         """
         This method will return the entry from the state files which
         corresponds to the given file name.
@@ -194,7 +194,7 @@ class FVSState:
             raise FVSUnsupportedKey(supported_keys)
             
         for _file in self.__files[key].values():
-            if _file["file_name"] == file_name:
+            if _file["relative_path"] == relative_path:
                 return _file
 
         return None

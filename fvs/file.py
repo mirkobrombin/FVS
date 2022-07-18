@@ -77,6 +77,22 @@ class FVSFile:
             os.remove(file_path)
         else:
             logger.debug(f"file {self.__file_name} does not exist, data catalog may be corrupted.")
+    
+    def restore(self, internal_path: str):
+        """
+        This method will restore the file, copying from the internal data
+        directory to the repo, renaming it to the original name.
+        """
+        file_path = os.path.join(internal_path, self.__md5)
+        if os.path.exists(file_path):
+            logger.debug(f"restoring file {self.__file_name}")
+            shutil.copy2(
+                file_path,
+                os.path.join(self.__repo.repo_path, self.__relative_path),
+                follow_symlinks=False
+            )
+        else:
+            logger.debug(f"file {self.__file_name} does not exist, data catalog may be corrupted.")
 
     @property
     def file_name(self):

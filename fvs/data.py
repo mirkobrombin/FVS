@@ -178,3 +178,14 @@ class FVSData:
         else:
             logger.debug(f"File {file.file_name} is not in data catalog. Ignoring.")
                 
+    
+    def get_file_location(self, md5: str):
+        """
+        This method returns the location of a file in the data catalog.
+        """
+        if md5 in self.__data_conf.keys():
+            file_name = self.__data_conf[md5]["file_name"]
+            return self.get_int_path(file_name)
+        else:
+            logging.debug(f"File {md5} is not in data catalog.")
+            return None
