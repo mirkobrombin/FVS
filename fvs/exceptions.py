@@ -40,7 +40,7 @@ class FVSFileNotFound(FVSException):
     """
     
     def __init__(self):
-        super().__init__("File not found.")
+        super().__init__("File not found in the state.")
 
 
 class FVSFileAlreadyExists(FVSException):
@@ -117,3 +117,13 @@ class VFSTransactionAlreadyStarted(FVSException):
     
     def __init__(self):
         super().__init__("A different kind of transaction is already started.")
+
+
+class FVSWrongSortBy(FVSException):
+    """
+    Exception raised when a sort_by parameter is not correct.
+    """
+    
+    def __init__(self, allowed_sort_by: list):
+        super().__init__("The sort_by parameter is not correct. \
+It should be one of the following: {}".format(allowed_sort_by))

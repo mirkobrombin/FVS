@@ -3,7 +3,7 @@ import yaml
 import logging
 
 from fvs.exceptions import FVSNothingToCommit, FVSCallerWrongClass, FVSEmptyCommitMessage, FVSWrongUnstagedDict, \
-    FVSStateNotFound, FVSCommittingToExistingState
+    FVSStateNotFound, FVSCommittingToExistingState, FVSWrongSortBy, FVSFileNotFound
 from fvs.data import FVSData
 from fvs.file import FVSFile
 from fvs.utils import FVSUtils
@@ -183,6 +183,21 @@ class FVSState:
         except FVSStateNotFound:
             return False
         return True
+    
+    def get_file_from_name(self, file_name:str, key:str = "added"):
+        """
+        This method will return the entry from the state files which
+        corresponds to the given file name.
+        """
+        supported_keys = ["added", "modified", "removed"]
+        if key not in supported_keys:
+            raise FVSUnsupportedKey(supported_keys)
+            
+        for _file in self.__files[key].values():
+            if _file["file_name"] == file_name:
+                return _file
+
+        return None
 
     @property
     def files(self):

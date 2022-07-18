@@ -79,6 +79,9 @@ class FVSData:
         Complete the transaction duplicating the files in the proper internal
         data path. It also saves the configuration to the data/data.yml file.
         """
+        if self.__transaction is None:
+            return  # it's safe to ignore this call, the state is probably only removing files
+
         for file in self.__transaction:
             _int_path = self.get_int_path(file.file_name)
             

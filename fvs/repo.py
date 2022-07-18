@@ -128,8 +128,20 @@ class FVSRepo:
 
             if not self.__has_no_states:
                 for rel in self.__active_state.files["relative_paths_in_state"]:
-                    if rel not in unstaged_relative_paths:
-                        unstaged_files["removed"].append(file)
+                    if rel in unstaged_relative_paths:
+                        continue
+                    
+                    file = self.__active_state.get_file_from_name(os.path.basename(rel), "added")
+
+                    if file is None:
+                        file = self.__active_state.get_file_from_name(os.path.basename(rel), "modified")
+
+                    if file is not None:
+                        unstaged_files["removed"].append({
+                            "file_name": file["file_name"], 
+                            "md5": file["md5"], 
+                            "relative_path": file["relative_path"]
+                        })
                         unstaged_files["count"] += 1
 
         return unstaged_files
