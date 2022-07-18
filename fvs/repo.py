@@ -176,23 +176,24 @@ class FVSRepo:
         if state_id not in self.__states:
             raise FVSStateNotFound(state_id)
         
-        state = FVSState(self, state_id)
-        state.break_references()
+        for _state_id in [state_id] + self.__get_posterior_state_ids(state_id):
+            state = FVSState(self, _state_id)
+            state.break_references()
 
-        """
-        If the state is the active state, we need to set the active state to
-        the previous one.
-        """
-        if self.__active_state.state_id == state_id:
-            self.__active_state = FVSState(self, self.__get_prior_state_id(state_id))
+            """
+            If the state is the active state, we need to set the active state to
+            the previous one.
+            """
+            if self.__active_state.state_id == _state_id:
+                self.__active_state = FVSState(self, self.__get_prior_state_id(_state_id))
 
-        """
-        Delete the state from the states folder. It should be safer now as
-        we already unreferenceed the state from all its files.
-        """
-        shutil.rmtree(state.state_path)
-        
-        del self.__states[state_id]
+            """
+            Delete the state from the states folder. It should be safer now as
+            we already unreferenceed the state from all its files.
+            """
+            shutil.rmtree(state.state_path)
+            
+            del self.__states[_state_id]
         self.__update_repo()
 
     def restore_state(self, state_id: int):
@@ -242,6 +243,23 @@ class FVSRepo:
                 return key
 
         return 0
+    
+    def __get_posterior_state_ids(self, state_id: int):
+        """
+        Get the ids of the posterior states.
+        ...
+        Raises:
+            FVSStateNotFound: If the state with the given id does not exist.
+        """
+        if state_id not in self.__states.keys():
+            raise FVSStateNotFound(state_id)
+        
+        posterior_states = []
+        for key in self.__states.keys():
+            if key > state_id:
+                posterior_states.append(key)
+
+        return posterior_states
     
     def __get_relative_path(self, path: str):
         """
