@@ -49,7 +49,7 @@ repo.commit("My second state!", ignore=["*.ignore"])
 - committing changes / creating states
 - patterns to ignore files
 - storing data with deduplication
+- deleting states
 
 ### What is not working yet
 - restoring states
-- deleting states
