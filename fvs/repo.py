@@ -207,10 +207,10 @@ class FVSRepo:
             FVSStateZeroNotDeletable: If the state_id is 0.
             FVSStateNotFound: If the state doesn't exist.
         """
-        if state_id == 0:
+        if int(state_id) == 0:
             raise FVSStateZeroNotDeletable()
 
-        if state_id not in self.__states:
+        if int(state_id) not in self.__states:
             raise FVSStateNotFound(state_id)
 
         """
@@ -253,7 +253,7 @@ class FVSRepo:
             FVSStateNotFound: If the state doesn't exist.
             FVSNothingToRestore: If there are no unstaged files.
         """
-        if state_id not in self.__states:
+        if int(state_id) not in self.__states.keys():
             raise FVSStateNotFound(state_id)
 
         self.__active_state = FVSState(self, state_id)
@@ -334,7 +334,7 @@ class FVSRepo:
         Raises:
             FVSStateNotFound: If the state with the given id does not exist.
         """
-        if state_id not in self.__states.keys():
+        if int(state_id) not in self.__states.keys():
             raise FVSStateNotFound(state_id)
 
         for key in self.__states.keys():
@@ -350,12 +350,12 @@ class FVSRepo:
         Raises:
             FVSStateNotFound: If the state with the given id does not exist.
         """
-        if state_id not in self.__states.keys():
+        if int(state_id) not in self.__states.keys():
             raise FVSStateNotFound(state_id)
 
         subsequent_states = []
         for key in self.__states.keys():
-            if key > state_id:
+            if key > int(state_id):
                 subsequent_states.append(key)
 
         return subsequent_states
@@ -367,11 +367,11 @@ class FVSRepo:
         Raises:
             FVSStateNotFound: If the state with the given id does not exist.
         """
-        if state_id not in self.__states.keys():
+        if int(state_id) not in self.__states.keys():
             raise FVSStateNotFound(state_id)
 
         for key in self.__states.keys():
-            if key > state_id:
+            if key > int(state_id):
                 return key
 
         return 0
