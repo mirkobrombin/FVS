@@ -211,6 +211,12 @@ class FVSRepo:
             
             del self.__states[_state_id]
         self.__update_repo()
+    
+    def delete_active_state(self):
+        """
+        Delete the active state.
+        """
+        self.delete_state(self.__active_state.state_id)
 
     def restore_state(self, state_id: int):
         """
