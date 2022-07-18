@@ -164,7 +164,7 @@ class FVSRepo:
     
     def delete_state(self, state_id: int):
         """
-        Delete a state.
+        Delete a state and all its subsequent states.
         ...
         Raises:
             FVSStateZeroNotDeletable: If the state_id is 0.
@@ -176,6 +176,10 @@ class FVSRepo:
         if state_id not in self.__states:
             raise FVSStateNotFound(state_id)
         
+        """
+        Traveling in the future is probably something we don't want to do. So
+        we will break references for subsequent states too.
+        """
         for _state_id in [state_id] + self.__get_posterior_state_ids(state_id):
             state = FVSState(self, _state_id)
             state.break_references()
