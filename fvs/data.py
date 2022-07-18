@@ -80,7 +80,12 @@ class FVSData:
         data path. It also saves the configuration to the data/data.yml file.
         """
         for file in self.__transaction:
-            file.copy_to(self.get_int_path(file.file_name))
+            _int_path = self.get_int_path(file.file_name)
+            
+            if self.__transaction_type == 0:
+                file.copy_to(_int_path)
+            elif self.__transaction_type == 1:
+                file.remove(_int_path)
 
         self.__save_config()
     

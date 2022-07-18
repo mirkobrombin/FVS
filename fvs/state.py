@@ -131,13 +131,24 @@ class FVSState:
         fvs_data.complete_transaction()
         self.__save_state()
     
-    def __save_state(self):
+    def break_references(self):
         """
-        This method will save the state to the repository.
+        This method ask to FVSData to remove the reference to the state for 
+        all the files, it will also phisicalliy delete the file if it has 
+        no other referenced states.
         """
-        state_path = self.__repo.new_state_path_by_id(self.__state_id)
-        with open(os.path.join(state_path, "files.yml"), "w") as f:
-            yaml.dump(self.__files, f, sort_keys=False)
+        if FVSUtils.get_caller_class_name() != "FVSRepo":
+            raise FVSCallerWrongClass("FVSRepo")
+        
+        fvs_data = FVSData(self.__repo, self)
+
+        for _file in self.__files["added"].values():
+            fvs_data.delete_file(FVSFile(self.__repo, _file["file_name"], _file["md5"], _file["relative_path"]))
+
+        for _file in self.__files["modified"].values():
+            fvs_data.delete_file(FVSFile(self.__repo, _file["file_name"], _file["md5"], _file["relative_path"]))
+
+        fvs_data.complete_transaction()
     
     def has_file(self, file_name:str, md5:str):
         """
@@ -154,6 +165,14 @@ class FVSState:
         if relative_path in self.__files["relative_paths_in_state"]:
             return True
         return False
+    
+    def __save_state(self):
+        """
+        This method will save the state to the repository.
+        """
+        state_path = self.__repo.new_state_path_by_id(self.__state_id)
+        with open(os.path.join(state_path, "files.yml"), "w") as f:
+            yaml.dump(self.__files, f, sort_keys=False)
 
     def __is_initialized(self):
         """
@@ -178,3 +197,10 @@ class FVSState:
         This method will return the state id.
         """
         return self.__state_id
+    
+    @property
+    def state_path(self):
+        """
+        This method will return the state path.
+        """
+        return self.__state_path

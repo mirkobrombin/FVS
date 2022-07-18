@@ -63,6 +63,21 @@ class FVSFile:
                 follow_symlinks=False
             )
 
+    def remove(self, path: str, use_md5_as_name: bool=True):
+        """
+        This method will remove the file from the internal data directory.
+        """
+        if use_md5_as_name:
+            file_path = os.path.join(path, self.__md5)
+        else:
+            file_path = os.path.join(path, self.__file_name)
+            
+        if os.path.exists(file_path):
+            logger.debug(f"removing file {self.__file_name} from {path}")
+            os.remove(file_path)
+        else:
+            logger.debug(f"file {self.__file_name} does not exist, data catalog may be corrupted.")
+
     @property
     def file_name(self):
         return self.__file_name

@@ -1,5 +1,6 @@
 import os
 import yaml
+import shutil
 import hashlib
 import logging
 
@@ -160,8 +161,41 @@ class FVSRepo:
         self.__active_state = state
         self.__update_repo()
         return state
+    
+    def delete_state(self, state_id: int):
+        """
+        Delete a state.
+        ...
+        Raises:
+            FVSStateZeroNotDeletable: If the state_id is 0.
+            FVSStateNotFound: If the state doesn't exist.
+        """
+        if state_id == 0:
+            raise FVSStateZeroNotDeletable()
+        
+        if state_id not in self.__states:
+            raise FVSStateNotFound(state_id)
+        
+        state = FVSState(self, state_id)
+        state.break_references()
 
-    def restore(self, state_id: int):
+        """
+        If the state is the active state, we need to set the active state to
+        the previous one.
+        """
+        if self.__active_state.state_id == state_id:
+            self.__active_state = FVSState(self, self.__get_prior_state_id(state_id))
+
+        """
+        Delete the state from the states folder. It should be safer now as
+        we already unreferenceed the state from all its files.
+        """
+        shutil.rmtree(state.state_path)
+        
+        del self.__states[state_id]
+        self.__update_repo()
+
+    def restore_state(self, state_id: int):
         """
         Restore the state with the given id.
         """
@@ -192,6 +226,22 @@ class FVSRepo:
             raise FVSEmptyStateIndex(state_id)
 
         return True
+    
+    def __get_prior_state_id(self, state_id: int):
+        """
+        Get the id of the prior state.
+        ...
+        Raises:
+            FVSStateNotFound: If the state with the given id does not exist.
+        """
+        if state_id not in self.__states.keys():
+            raise FVSStateNotFound(state_id)
+        
+        for key in self.__states.keys():
+            if key < state_id:
+                return key
+
+        return 0
     
     def __get_relative_path(self, path: str):
         """
@@ -253,7 +303,7 @@ class FVSRepo:
         """
         Get the next state id.
         """
-        return len(self.__states.keys())
+        return list(self.__states)[-1] + 1
     
     @property
     def active_state(self):
