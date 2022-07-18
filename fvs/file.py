@@ -42,7 +42,6 @@ class FVSFile:
             if os.path.exists(os.path.join(dest, self.__md5)):
                 logger.debug(f"File {self.__md5} already exists in {dest}.")
                 return
-
             logger.debug(f"copying file {self.__file_name} to {dest} with name {self.__md5}")
             shutil.copy2(
                 os.path.join(self.__repo.repo_path, self.__relative_path),
@@ -85,8 +84,11 @@ class FVSFile:
         directory to the repo, renaming it to the original name.
         """
         file_path = os.path.join(internal_path, self.__md5)
+        dir_name = os.path.dirname(os.path.join(self.__repo.repo_path, self.__relative_path))
+        
         if os.path.exists(file_path):
             logger.debug(f"restoring file {self.__file_name}")
+            os.makedirs(dir_name, exist_ok=True)
             shutil.copy2(
                 file_path,
                 os.path.join(self.__repo.repo_path, self.__relative_path),
