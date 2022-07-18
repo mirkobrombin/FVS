@@ -45,4 +45,7 @@ with open("test/test.ignore", "w") as f:
 
 # commit the changes ignoring files with .ignore extension
 repo.commit("My second state!", ignore=["*.ignore"])
+
+# restore the state 1
+repo.restore(1)
 ```
