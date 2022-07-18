@@ -1,7 +1,19 @@
 # FVS
-File Versioning System with hash comparison and data storage to create unlinked states that can be deleted
+File Versioning System with hash comparison and data storage to create unlinked 
+states that can be deleted
 
 > ⚠️ This is a work in progress.
+
+### Why FVS?
+The main reason for this project is for the purpose of personal knowledge and 
+understanding of the versioning system. The second reason is to make a simple
+and easy-to-implement versioning system for [Bottles](https://github.com/bottlesdevs/Bottles).
+
+There are plenty of other versioning systems out there, but all of these 
+provide features that I wouldn't need in my projects. The purpose of FVS is to 
+always remain as clear and simple as possible, providing only the functionality 
+of organizing file versions into states, ie recovery points that take advantage 
+of deduplication to minimize space consumption.
 
 ### Usage
 
