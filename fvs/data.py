@@ -128,4 +128,38 @@ class FVSData:
             
         else:
             logger.debug(f"File {file.file_name} already in data catalog.")
+    
+    def delete_file(self, file: 'FVSFile', state_id: int=None):
+        """
+        This method delete a state for a file in the catalog, it will
+        remove the file entry if the state is the last one. If state_id
+        is not set, the one defined in the FVSFile object will be used, 
+        assuming it was the intended state.
+        ...
+        Raises:
+            FVSStateDataHasNoState: if the state is not set.
+        """
+        if state_id is None and not self.__state:
+            raise FVSStateDataHasNoState()
         
+        if state_id is None:
+            state_id = self.__state.state_id
+        
+        if self.__transaction is None:
+            self.__transaction = []
+            
+        if file.md5 in self.__data_conf.keys():
+            if state_id in self.__data_conf[file.md5]["states"]:
+                logger.debug(f"Unlinking state {state_id} from file {file.file_name} in data catalog.")
+                self.__data_conf[file.md5]["states"].remove(state_id)
+                
+                if len(self.__data_conf[file.md5]["states"]) == 0:
+                    logger.debug(f"{state_id} was the last state for file {file.file_name}. Removing file from data catalog.")
+                    del self.__data_conf[file.md5]
+                    self.__transaction.append(file)
+                
+            else:
+                logger.debug(f"File {file.file_name} has no state {self.__state.state_id}. Ignoring.")
+        else:
+            logger.debug(f"File {file.file_name} is not in data catalog. Ignoring.")
+                
