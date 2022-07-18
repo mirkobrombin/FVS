@@ -2,7 +2,7 @@ import os
 import yaml
 import logging
 
-from fvs.exceptions import FVSStateDataHasNoState, VFSTransactionAlreadyStarted
+from fvs.exceptions import FVSDataHasNoState, VFSTransactionAlreadyStarted
 
 
 logger = logging.getLogger("fvs.data")
@@ -113,10 +113,10 @@ class FVSData:
         is needed for the 'file' parameter.
         ...
         Raises:
-            FVSStateDataHasNoState: if the state is not set.
+            FVSDataHasNoState: if the state is not set.
         """
         if not self.__state:
-            raise FVSStateDataHasNoState()
+            raise FVSDataHasNoState()
         
         self.__set_transaction_type(0)
         
@@ -145,10 +145,10 @@ class FVSData:
         assuming it was the intended state.
         ...
         Raises:
-            FVSStateDataHasNoState: if the state is not set.
+            FVSDataHasNoState: if the state is not set.
         """
         if state_id is None and not self.__state:
-            raise FVSStateDataHasNoState()
+            raise FVSDataHasNoState()
         
         if state_id is None:
             state_id = self.__state.state_id

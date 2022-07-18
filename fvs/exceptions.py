@@ -100,7 +100,7 @@ This is not allowed and states are not meant to be altered \
 once the first commit has been made.")
 
 
-class FVSStateDataHasNoState(FVSException):
+class FVSDataHasNoState(FVSException):
     """
     Exception raised when the state data has no state.
     """
