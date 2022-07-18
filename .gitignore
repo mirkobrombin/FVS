@@ -5,3 +5,6 @@ test/
 /venv
 /test*
 /.idea
+/build
+/dist
+/fvs/*.egg-info
