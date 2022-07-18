@@ -15,6 +15,10 @@ class FVSUtils:
 
     @staticmethod
     def get_md5_hash(path: str, block_size: int = 2 ** 20):
+        """
+        Get the md5 hash of the given file. It will use name+content
+        to avoid empty files.
+        """
         md5_temp = hashlib.md5()
         with open(path, "rb") as f:
             while True:
@@ -22,4 +26,5 @@ class FVSUtils:
                 if not buffer:
                     break
                 md5_temp.update(buffer)
+        md5_temp.update(path.encode())
         return md5_temp.hexdigest()
