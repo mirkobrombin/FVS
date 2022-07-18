@@ -15,6 +15,9 @@ always remain as clear and simple as possible, providing only the functionality
 of organizing file versions into states, ie recovery points that take advantage 
 of deduplication to minimize space consumption.
 
+### Dependencies
+FVS only depends on the `pyyaml` library.
+
 ### Usage
 
 ```python
