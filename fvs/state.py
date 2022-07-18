@@ -19,7 +19,7 @@ class FVSState:
 
     def __init__(self, repo:'FVSRepo', state_id: int = None):
         self.__repo = repo
-        self.__files = {"count": 0, "added": {}, "modified": {}, "removed": {}, "relative_paths_in_state": []}
+        self.__files = {"count": 0, "added": {}, "modified": {}, "removed": {}, "intact": {}}
         
         if state_id is not None:
             self.__load_state(state_id)
@@ -82,7 +82,8 @@ class FVSState:
             unstaged_files.get("count"),
             unstaged_files.get("added"),
             unstaged_files.get("modified"),
-            unstaged_files.get("removed")
+            unstaged_files.get("removed"),
+            unstaged_files.get("intact")
         ]:
             raise FVSWrongUnstagedDict()
 
@@ -111,7 +112,6 @@ class FVSState:
                 "md5": _file["md5"],
                 "relative_path": _file["relative_path"],
             }
-            self.__files["relative_paths_in_state"].append(_file["relative_path"])
         
         for _file in unstaged_files["modified"]:
             fvs_data.add_file(FVSFile(self.__repo, _file["file_name"], _file["md5"], _file["relative_path"]))
@@ -120,7 +120,6 @@ class FVSState:
                 "md5": _file["md5"],
                 "relative_path": _file["relative_path"],
             }
-            self.__files["relative_paths_in_state"].append(_file["relative_path"])
         
         for _file in unstaged_files["removed"]:
             self.__files["removed"][_file["md5"]] = {
@@ -128,6 +127,14 @@ class FVSState:
                 "md5": _file["md5"],
                 "relative_path": _file["relative_path"],
             }
+        
+        for _file in unstaged_files["intact"]:
+            self.__files["intact"][_file["md5"]] = {
+                "file_name": _file["file_name"],
+                "md5": _file["md5"],
+                "relative_path": _file["relative_path"],
+            }
+
         fvs_data.complete_transaction()
         self.__save_state()
     
@@ -154,15 +161,9 @@ class FVSState:
         """
         This method will check if the state has the given file.
         """
-        if md5 in self.__files["added"] or md5 in self.__files["modified"]:
-            return True
-        return False
-    
-    def has_relative_path(self, relative_path:str):
-        """
-        This method will check if the state has the given relative path.
-        """
-        if relative_path in self.__files["relative_paths_in_state"]:
+        if md5 in self.__files["added"] \
+            or md5 in self.__files["modified"] \
+            or md5 in self.__files["intact"]:
             return True
         return False
     
@@ -184,18 +185,30 @@ class FVSState:
             return False
         return True
     
-    def get_file_from_relative_path(self, relative_path:str, key:str = "added"):
+    def has_relative_path(self, relative_path:str, key:str = "any"):
         """
         This method will return the entry from the state files which
-        corresponds to the given file name.
+        corresponds to the given file name. The any key will check in
+        added, modified and intact files.
         """
-        supported_keys = ["added", "modified", "removed"]
+        supported_keys = ["any", "added", "modified", "instact"]
         if key not in supported_keys:
             raise FVSUnsupportedKey(supported_keys)
             
-        for _file in self.__files[key].values():
-            if _file["relative_path"] == relative_path:
-                return _file
+        if key == "any":
+            for file in self.__files["added"].values():
+                if file["relative_path"] == relative_path:
+                    return file
+            for file in self.__files["modified"].values():
+                if file["relative_path"] == relative_path:
+                    return file
+            for file in self.__files["intact"].values():
+                if file["relative_path"] == relative_path:
+                    return file
+        else:
+            for _file in self.__files[key].values():
+                if _file["relative_path"] == relative_path:
+                    return _file
 
         return None
 

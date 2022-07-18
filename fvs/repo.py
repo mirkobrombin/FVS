@@ -76,7 +76,8 @@ class FVSRepo:
             "count": 0,
             "added": [],
             "removed": [],
-            "modified": []
+            "modified": [],
+            "intact": []
         }
         
         if ignore is None:
@@ -98,6 +99,18 @@ class FVSRepo:
             unstaged_relative_paths = []
 
             """
+            Create a copy of the active state files so we can remove every
+            handled entry and easily figure out what was deleted.
+            """
+            if not self.__has_no_states:
+                active_state_files = self.__active_state.files.copy()
+
+            def del_active_state_file_key(md5: str):
+                active_state_files["added"].pop(md5, None)
+                active_state_files["modified"].pop(md5, None)
+                active_state_files["intact"].pop(md5, None)
+
+            """
             Here we loop through the ignore pattern and remove the files that
             match any of them. Check if performed on the relative path.
             """
@@ -106,55 +119,54 @@ class FVSRepo:
 
             """
             Here we loop through the files and determinate which ones are
-            added, removed or modified, comparing with prior state or simply
-            adding all of them if this is the first state.
+            added, removed, modified or intact, comparing with prior state 
+            or simply adding all of them if this is the first state.
             """
             for file in files:
                 _full_path = os.path.join(root, file)
                 _relative_path = self.__get_relative_path(file)
                 _md5 = FVSUtils.get_md5_hash(_full_path)
+                _entry = {
+                    "file_name": file, 
+                    "md5": _md5, 
+                    "relative_path": _relative_path
+                }
                 unstaged_relative_paths.append(_relative_path)
 
-                if not self.__has_no_states and self.__active_state.has_file(file, _md5):
+                """
+                If this is the first state, just add all files.
+                """
+                if self.__has_no_states:
+                    unstaged_files["added"].append(_entry)
+                    unstaged_files["count"] += 1
                     continue
 
-                if not self.__has_no_states and self.__active_state.has_relative_path(_relative_path):
-                    if not return_original_md5:
-                        unstaged_files["modified"].append({
-                            "file_name": file, 
-                            "md5": _md5, 
-                            "relative_path": _relative_path
-                        })
-                    else:
-                        _file = self.__active_state.get_file_from_relative_path(_relative_path, "added")
-
-                        if _file is None:
-                            _file = self.__active_state.get_file_from_relative_path(_relative_path, "modified")
-
-                        if file is not None:
-                            unstaged_files["modified"].append(_file)
+                """
+                Assuming this is not the first state, we need to check if
+                the file is added, removed, modified or intact.
+                """
+                if self.__active_state.has_file(file, _md5):
+                    unstaged_files["intact"].append(_entry)
+                    del_active_state_file_key(_md5)
+                    unstaged_files["count"] += 1
+                elif self.__active_state.has_relative_path(_relative_path):
+                    unstaged_files["modified"].append(_entry)
+                    del_active_state_file_key(_md5)
+                    unstaged_files["count"] += 1
                 else:
-                    unstaged_files["added"].append({
-                        "file_name": file, 
-                        "md5": _md5, 
-                        "relative_path": _relative_path
-                    })
-                unstaged_files["count"] += 1
+                    unstaged_files["added"].append(_entry)
+                    unstaged_files["count"] += 1
+
+                unstaged_relative_paths.append(_relative_path)
 
             if not self.__has_no_states:
-                for rel in self.__active_state.files["relative_paths_in_state"]:
-                    if rel in unstaged_relative_paths:
-                        continue
-                    
-                    file = self.__active_state.get_file_from_relative_path(rel, "added")
-
-                    if file is None:
-                        file = self.__active_state.get_file_from_relative_path(rel, "modified")
-
-                    if file is not None:
+                for file in list(active_state_files["added"].values()) +\
+                            list(active_state_files["modified"].values()) +\
+                            list(active_state_files["intact"].values()):
+                    if file["relative_path"] not in unstaged_relative_paths:
                         unstaged_files["removed"].append({
-                            "file_name": file["file_name"], 
-                            "md5": file["md5"], 
+                            "file_name": file["file_name"],
+                            "md5": file["md5"],
                             "relative_path": file["relative_path"]
                         })
                         unstaged_files["count"] += 1

@@ -86,7 +86,7 @@ class FVSWrongUnstagedDict(FVSException):
     
     def __init__(self):
         super().__init__("The unstaged_files dict is not correct (following\
-keys are required: added, modified, removed).")
+keys are required: added, modified, removed, intact).")
 
 
 class FVSCommittingToExistingState(FVSException):
