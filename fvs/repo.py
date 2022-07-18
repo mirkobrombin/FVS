@@ -418,6 +418,8 @@ class FVSRepo:
         """
         Get the next state id.
         """
+        if self.__has_no_states:
+            return 0
         return list(self.__states)[-1] + 1
     
     @property
