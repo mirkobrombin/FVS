@@ -2,7 +2,7 @@ import os
 import yaml
 import logging
 
-from fvs.exceptions import FVSStateDataHasNoState
+from fvs.exceptions import FVSStateDataHasNoState, VFSTransactionAlreadyStarted
 
 
 logger = logging.getLogger("fvs.data")
@@ -18,6 +18,7 @@ class FVSData:
     ]
     __state:'FVSState' = None
     __transaction: list = None
+    __transaction_type: int = None  # 0: add, 1: remove
 
     def __init__(self, repo: 'FVSRepo', state: 'FVSState'=None):
         """
@@ -96,6 +97,14 @@ class FVSData:
         
         return os.path.join(self.__data_path, int_path)
     
+    def __set_transaction_type(self, type_id: int):
+        if self.__transaction is None:
+            self.__transaction = []
+            if self.__transaction_type is None:
+                self.__transaction_type = type_id
+            elif self.__transaction_type != type_id:
+                raise VFSTransactionAlreadyStarted()
+    
     def add_file(self, file: 'FVSFile'):
         """
         This method add a file to the catalog and append it to the
@@ -109,9 +118,8 @@ class FVSData:
         if not self.__state:
             raise FVSStateDataHasNoState()
         
-        if self.__transaction is None:
-            self.__transaction = []
-
+        self.__set_transaction_type(0)
+        
         if file.md5 not in self.__data_conf.keys():
             logger.debug(f"Adding file {file.file_name} to data catalog.")
             self.__data_conf[file.md5] = {
@@ -145,8 +153,7 @@ class FVSData:
         if state_id is None:
             state_id = self.__state.state_id
         
-        if self.__transaction is None:
-            self.__transaction = []
+        self.__set_transaction_type(1)
             
         if file.md5 in self.__data_conf.keys():
             if state_id in self.__data_conf[file.md5]["states"]:
