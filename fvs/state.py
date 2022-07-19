@@ -1,5 +1,5 @@
 import os
-import yaml
+import json
 import logging
 
 from fvs.exceptions import FVSCallerWrongClass, FVSEmptyCommitMessage, FVSWrongUnstagedDict, \
@@ -41,8 +41,8 @@ class FVSState:
         if not os.path.exists(self.__state_path):
             raise FVSStateNotFound(state_id)
 
-        with open(os.path.join(self.__state_path, "files.yml"), "r") as f:
-            self.__files = yaml.safe_load(f)
+        with open(os.path.join(self.__state_path, "files.json"), "r") as f:
+            self.__files = json.load(f)
 
     def commit(
             self,
@@ -163,8 +163,8 @@ class FVSState:
         This method will save the state to the repository.
         """
         state_path = self.__repo.new_state_path_by_id(self.__state_id)
-        with open(os.path.join(state_path, "files.yml"), "w") as f:
-            yaml.dump(self.__files, f, sort_keys=False)
+        with open(os.path.join(state_path, "files.json"), "w") as f:
+            json.dump(self.__files, f, sort_keys=False, separators=(',', ':'))
 
     def __is_initialized(self):
         """

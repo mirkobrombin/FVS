@@ -1,5 +1,5 @@
 import os
-import yaml
+import json
 import shutil
 import logging
 
@@ -39,7 +39,7 @@ class FVSRepo:
             ".fvs/states",
             ".fvs/data",
         ]
-        repo_conf = os.path.join(self.__repo_path, ".fvs/repo.yml")
+        repo_conf = os.path.join(self.__repo_path, ".fvs/repo.json")
         updated = False
         for _dir in dirs:
             if not os.path.exists(os.path.join(self.__repo_path, _dir)):
@@ -49,7 +49,7 @@ class FVSRepo:
         if not os.path.exists(repo_conf):
             with open(repo_conf, "w") as f:
                 self.__repo_conf = {"id": -1, "states": {}}
-                yaml.dump(self.__repo_conf, f, sort_keys=False)
+                json.dump(self.__repo_conf, f, sort_keys=False)
                 updated = True
 
         if updated:
@@ -59,11 +59,15 @@ class FVSRepo:
         """
         Load the repository configuration.
         """
-        repo_conf = os.path.join(self.__repo_path, ".fvs/repo.yml")
+        repo_conf = os.path.join(self.__repo_path, ".fvs/repo.json")
         with open(repo_conf, "r") as f:
-            self.__repo_conf = yaml.safe_load(f)
+            self.__repo_conf = json.load(f)
+        
+        """
+        JSON store int key as strings, so we need to convert them back to int.
+        """
+        self.__states = {int(key): value for key, value in self.__repo_conf["states"].items()}
 
-        self.__states = self.__repo_conf["states"]
         if int(self.__repo_conf["id"]) >= 0:
             self.__active_state = FVSState(self, int(self.__repo_conf["id"]))
         else:
@@ -321,7 +325,7 @@ class FVSRepo:
             FVSMissingStateIndex: If the state with the given id is missing
             FVSEmptyStateIndex: If the state with the given id is empty.
         """
-        index_path = os.path.join(self.get_state_path(state_id), "files.yml")
+        index_path = os.path.join(self.get_state_path(state_id), "files.json")
 
         if not os.path.exists(self.get_state_path(state_id)):
             raise FVSStateNotFound(state_id)
@@ -330,7 +334,7 @@ class FVSRepo:
             raise FVSMissingStateIndex(state_id)
 
         with open(index_path, "r") as f:
-            index = yaml.safe_load(f)
+            index = json.load(f)
 
         if not index:
             raise FVSEmptyStateIndex(state_id)
@@ -402,11 +406,11 @@ class FVSRepo:
         """
         Update the repository configuration.
         """
-        repo_conf = os.path.join(self.__repo_path, ".fvs/repo.yml")
+        repo_conf = os.path.join(self.__repo_path, ".fvs/repo.json")
         with open(repo_conf, "w") as f:
             self.__repo_conf["id"] = self.__active_state.state_id
             self.__repo_conf["states"] = self.__states
-            yaml.dump(self.__repo_conf, f, sort_keys=False)
+            json.dump(self.__repo_conf, f, sort_keys=False)
 
         if self.__has_no_states:
             self.__has_no_states = False

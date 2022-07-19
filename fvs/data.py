@@ -1,5 +1,5 @@
 import os
-import yaml
+import json
 import logging
 
 from fvs.exceptions import FVSDataHasNoState, VFSTransactionAlreadyStarted
@@ -35,7 +35,7 @@ class FVSData:
         performs some checks to ensure that the data/ directory is valid,
         fixing it if necessary.
         """
-        self.__data_conf_path = os.path.join(self.__data_path, "data.yml")
+        self.__data_conf_path = os.path.join(self.__data_path, "data.json")
 
         """
         This check if the data/ directory exists. If not, create it.
@@ -52,32 +52,32 @@ class FVSData:
                 os.makedirs(os.path.join(self.__data_path, int_path))
 
         """
-        Check if the data.yml file exists. If not, create it and write the
+        Check if the data.json file exists. If not, create it and write the
         default configuration.
         """
         if not os.path.exists(self.__data_conf_path):
             with open(self.__data_conf_path, "w") as f:
                 self.__data_conf = {}
-                yaml.dump(self.__data_conf, f, sort_keys=False)
+                json.dump(self.__data_conf, f, sort_keys=False, separators=(',', ':'))
 
     def __load_config(self):
         """
-        Load the data configuration from the data/data.yml file.
+        Load the data configuration from the data/data.json file.
         """
         with open(self.__data_conf_path, "r") as f:
-            self.__data_conf = yaml.safe_load(f)
+            self.__data_conf = json.load(f)
 
     def __save_config(self):
         """
-        Save the data configuration to the data/data.yml file.
+        Save the data configuration to the data/data.json file.
         """
         with open(self.__data_conf_path, "w") as f:
-            yaml.dump(self.__data_conf, f, sort_keys=False)
+            json.dump(self.__data_conf, f, sort_keys=False, separators=(',', ':'))
 
     def complete_transaction(self):
         """
         Complete the transaction duplicating the files in the proper internal
-        data path. It also saves the configuration to the data/data.yml file.
+        data path. It also saves the configuration to the data/data.json file.
         """
         if self.__transaction is None:
             return  # it's safe to ignore this call, the state is probably only removing files
