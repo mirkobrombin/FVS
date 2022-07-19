@@ -90,7 +90,7 @@ def fvs_cli():
         sys.exit(0)
 
     else:
-        sys.stderr.write("Unknown command: {}\n".format(args.command))
+        parser.print_help()
         sys.exit(1)
 
 

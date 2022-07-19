@@ -9,5 +9,13 @@ setup(
     author='Mirko Brombin',
     author_email='send@mirko.pm',
     description='File Versioning System with hash comparison, deduplication and data storage to create unlinked '
-                'states that can be deleted '
+                'states that can be deleted ',
+    entry_points={
+        'console_scripts': [
+            'fvs=fvs.cli:fvs_cli'
+        ]
+    },
+    install_requires=[
+        'orjson'
+    ]
 )
