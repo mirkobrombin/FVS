@@ -93,6 +93,25 @@ class FVSRepo:
         if ignore is None:
             ignore = []
 
+        """
+        The following new variable is used to store all relative paths
+        handled in the following loop. We will use them to list removed
+        files.
+        """
+        unstaged_relative_paths = []
+
+        """
+        Create a copy of the active state files so we can remove every
+        handled entry and easily figure out what was deleted.
+        """
+        if not self.__has_no_states:
+            active_state_files = self.__active_state.files.copy()
+
+        def del_active_state_file_key(md5: str):
+            active_state_files["added"].pop(md5, None)
+            active_state_files["modified"].pop(md5, None)
+            active_state_files["intact"].pop(md5, None)
+
         for root, dirs, files in os.walk(self.__repo_path):
             """
             Here we are excluding the .fvs/ directory from the unstaged files
@@ -100,25 +119,6 @@ class FVSRepo:
             """
             if ".fvs" in root:  # TODO: need to be improved
                 continue
-
-            """
-            The following new variable is used to store all relative paths
-            handled in the following loop. We will use them to list removed
-            files.
-            """
-            unstaged_relative_paths = []
-
-            """
-            Create a copy of the active state files so we can remove every
-            handled entry and easily figure out what was deleted.
-            """
-            if not self.__has_no_states:
-                active_state_files = self.__active_state.files.copy()
-
-            def del_active_state_file_key(md5: str):
-                active_state_files["added"].pop(md5, None)
-                active_state_files["modified"].pop(md5, None)
-                active_state_files["intact"].pop(md5, None)
 
             """
             Here we loop through the ignore pattern and remove the files that
@@ -174,17 +174,17 @@ class FVSRepo:
 
                 unstaged_relative_paths.append(_relative_path)
 
-            if not self.__has_no_states:
-                for file in list(active_state_files["added"].values()) + \
-                            list(active_state_files["modified"].values()) + \
-                            list(active_state_files["intact"].values()):
-                    if file["relative_path"] not in unstaged_relative_paths:
-                        unstaged_files["removed"].append({
-                            "file_name": file["file_name"],
-                            "md5": file["md5"],
-                            "relative_path": file["relative_path"]
-                        })
-                        unstaged_files["count"] += 1
+        if not self.__has_no_states:
+            for file in list(active_state_files["added"].values()) + \
+                        list(active_state_files["modified"].values()) + \
+                        list(active_state_files["intact"].values()):
+                if file["relative_path"] not in unstaged_relative_paths:
+                    unstaged_files["removed"].append({
+                        "file_name": file["file_name"],
+                        "md5": file["md5"],
+                        "relative_path": file["relative_path"]
+                    })
+                    unstaged_files["count"] += 1
 
         return unstaged_files
 
