@@ -38,7 +38,7 @@ Committed state 1
 -   0 First state
 - ➔ 1 Second state
 
-> fvs restore 0
+> fvs restore -s 0
 Restored state 0
 
 > fvs active
