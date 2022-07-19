@@ -21,16 +21,16 @@ FVS only need the `orjson` python package.
 ### CLI usage
 ```bash
 > mkdir repo ; cd repo
-> fvs init
+> fvs init  # or fvs init --path <path>
 Initialized FVS repository in /your/location/repo
 
 > touch hello.txt
-> fvs commit "First state"
+> fvs commit -m "First state"  # -i=<pattern> -i=<pattern2> to ignore files
 Committing...
 Committed state 0
 
 > echo "Hello world!" >> hello.txt
-> fvs commit "Second state"
+> fvs commit -m "Second state"
 Committing...
 Committed state 1
 

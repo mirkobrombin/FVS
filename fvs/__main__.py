@@ -11,39 +11,39 @@ version = 'FVS 0.1'
 def fvs_cli():
     parser = argparse.ArgumentParser(description='FVS')
     parser.add_argument('-v', '--version', action='version', version=version)
-    parser.add_argument('command', help='command to run', default='help', nargs='?')
-    parser.add_argument('args', nargs=argparse.REMAINDER, help='arguments for the command', default=[])
+
+    subparsers = parser.add_subparsers(dest='command', help='sub-command help')
+
+    init_parser = subparsers.add_parser("init", help="Create a new FVS repository")
+    init_parser.add_argument('-p', '--path', help='path to the repository', default=os.getcwd())
+
+    commit_parser = subparsers.add_parser("commit", help="Commit changes to the repository")
+    commit_parser.add_argument('-i', '--ignore', help='patterns to ignore', action='append', default=[], required=False)
+    commit_parser.add_argument('-m', '--message', help='commit message', nargs='+', required=True)
+
+    states_parser = subparsers.add_parser("states", help="List all states in the repository")
+
+    restore_parser = subparsers.add_parser("restore", help="Restore a state from the repository")
+    restore_parser.add_argument('-s', '--state-id', help='state id', required=True)
+
     args = parser.parse_args()
 
-    if args.command == 'help':
-        parser.print_help()
-        sys.exit(0)
-
-    elif args.command == 'version':
-        sys.stdout.write(version + '\n')
-        sys.exit(0)
-
-    elif args.command == 'init':
-        path = os.getcwd() if len(args.args) == 0 else args.args[0]
-        repo = FVSRepo(path)
+    if args.command == 'init':
+        repo = FVSRepo(args.path)
 
         with contextlib.suppress(FVSNothingToCommit):
             repo.commit("Init")
 
-        sys.stdout.write("Initialized FVS repository in {}\n".format(path))
+        sys.stdout.write("Initialized FVS repository in {}\n".format(args.path))
         sys.exit(0)
 
     elif args.command == 'commit':
-        if len(args.args) == 0:
-            sys.stderr.write("No commit message provided\n")
-            sys.exit(1)
-
         repo = FVSRepo(os.getcwd())
-        message = " ".join(args.args)
+        message = ' '.join(args.message)
 
         try:
             sys.stdout.write("Committing...\n")
-            repo.commit(message)
+            repo.commit(args.message, args.ignore)
             sys.stdout.write("Committed state {} ({})\n".format(repo.active_state_id, message))
             sys.exit(0)
         except FVSNothingToCommit:
@@ -67,22 +67,16 @@ def fvs_cli():
         sys.exit(0)
 
     elif args.command == 'restore':
-        if len(args.args) == 0:
-            sys.stderr.write("No state id provided\n")
-            sys.exit(1)
-
-        state_id = args.args[0]
-
         repo = FVSRepo(os.getcwd())
         try:
-            repo.restore_state(state_id)
+            repo.restore_state(args.state_id)
             sys.stdout.write("Restored state\n")
             sys.exit(0)
         except FVSStateNotFound:
-            sys.stderr.write("State {} not found\n".format(state_id))
+            sys.stderr.write("State {} not found\n".format(args.state_id))
             sys.exit(1)
         except FVSNothingToRestore:
-            sys.stderr.write("Nothing to restore from state {}\n".format(state_id))
+            sys.stderr.write("Nothing to restore from state {}\n".format(args.state_id))
             sys.exit(1)
 
     elif args.command == 'active':
