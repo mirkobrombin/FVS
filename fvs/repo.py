@@ -69,9 +69,13 @@ class FVSRepo:
         else:
             self.__has_no_states = True
 
-    def get_unstaged_files(self, ignore: list = None):
+    def get_unstaged_files(self, ignore: list = None, purpose: int = 0):
         """
         Get the unstaged files.
+        ...
+        Purpose values:
+            0: Committing a new state.
+            1: Restoring a state (will return original md5 for modified files)
         """
         unstaged_files = {
             "count": 0,
@@ -150,8 +154,14 @@ class FVSRepo:
                 if self.__active_state.has_file(_md5):
                     unstaged_files["intact"].append(_entry)
                     del_active_state_file_key(_md5)
-                elif self.__active_state.has_relative_path(_relative_path):
-                    unstaged_files["modified"].append(_entry)
+                elif orig := self.__active_state.has_relative_path(_relative_path):
+                    if purpose == 1:
+                        _md5 = orig["md5"]
+                    unstaged_files["modified"].append({
+                        "file_name": file,
+                        "md5": _md5,
+                        "relative_path": _relative_path
+                    })
                     del_active_state_file_key(_md5)
                     unstaged_files["count"] += 1
                 else:
@@ -258,7 +268,7 @@ class FVSRepo:
 
         self.__active_state = FVSState(self, state_id)
         subsequent_state_id = self.__get_subsequent_state_id(state_id)
-        unstaged_files = self.get_unstaged_files(ignore)
+        unstaged_files = self.get_unstaged_files(ignore, purpose=1)
 
         if unstaged_files["count"] == 0:
             raise FVSNothingToRestore()

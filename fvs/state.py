@@ -187,19 +187,19 @@ class FVSState:
             raise FVSUnsupportedKey(supported_keys)
 
         if key == "any":
-            for file in self.__files["added"].values():
+            for file in self.__files["intact"].values():
                 if file["relative_path"] == relative_path:
                     return file
             for file in self.__files["modified"].values():
                 if file["relative_path"] == relative_path:
                     return file
-            for file in self.__files["intact"].values():
+            for file in self.__files["added"].values():
                 if file["relative_path"] == relative_path:
                     return file
-        else:
-            for _file in self.__files[key].values():
-                if _file["relative_path"] == relative_path:
-                    return _file
+                    
+        for _file in self.__files[key].values():
+            if _file["relative_path"] == relative_path:
+                return _file
 
         return None
 
