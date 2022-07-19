@@ -18,7 +18,37 @@ of deduplication to minimize space consumption.
 ### Dependencies
 FVS only need the `orjson` python package.
 
-### Usage
+### CLI usage
+```bash
+> mkdir repo ; cd repo
+> fvs init
+Initialized FVS repository in /your/location/repo
+
+> touch hello.txt
+> fvs commit "First state"
+Committing...
+Committed state 0
+
+> echo "Hello world!" >> hello.txt
+> fvs commit "Second state"
+Committing...
+Committed state 1
+
+> fvs states
+-   0 First state
+- ➔ 1 Second state
+
+> fvs restore 0
+Restored state 0
+
+> fvs states
+- ➔ 0 First state
+
+> fvs active
+Active state is 0
+```
+
+### Lib usage
 
 ```python
 from fvs import FVSRepo

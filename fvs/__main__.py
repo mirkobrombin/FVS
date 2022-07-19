@@ -86,10 +86,10 @@ def fvs_cli():
 
     elif args.command == 'active':
         repo = FVSRepo(os.getcwd())
-        if repo.active_state is None:
+        if repo.active_state_id in [-1, None]:
             sys.stdout.write("No active state\n")
             sys.exit(0)
-        sys.stdout.write("Active state is {}\n".format(repo.active_state_state_id))
+        sys.stdout.write("Active state is {}\n".format(repo.active_state_id))
         sys.exit(0)
 
     else:
