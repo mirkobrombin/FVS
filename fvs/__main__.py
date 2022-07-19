@@ -43,7 +43,7 @@ def fvs_cli():
 
         try:
             sys.stdout.write("Committing...\n")
-            repo.commit(args.message, args.ignore)
+            repo.commit(message, args.ignore)
             sys.stdout.write("Committed state {} ({})\n".format(repo.active_state_id, message))
             sys.exit(0)
         except FVSNothingToCommit:
