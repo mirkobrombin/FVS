@@ -23,7 +23,7 @@ class FVSRepo:
         """
         Initialize the FVSRepo.
         """
-        self.__repo_path = repo_path
+        self.__repo_path = os.path.abspath(repo_path)
         self.__states_path = os.path.join(self.__repo_path, ".fvs/states")
         self.__update_fvs_path()
         self.__load_config()
@@ -134,7 +134,8 @@ class FVSRepo:
             """
             for file in files:
                 _full_path = os.path.join(root, file)
-                _relative_path = self.__get_relative_path(file)
+                _relative_path = self.__get_relative_path(os.path.join(root, file))
+                print(_relative_path)
                 _md5 = FVSUtils.get_md5_hash(_full_path)
                 _entry = {
                     "file_name": file,
@@ -394,6 +395,7 @@ class FVSRepo:
         """
         Get the relative path of the given files.
         """
+        repo_root = os.path.dirname(self.__repo_path)
         return os.path.relpath(path, self.__repo_path)
 
     def get_state_path(self, state_id: int):
