@@ -15,6 +15,7 @@ def fvs_cli():
     subparsers = parser.add_subparsers(dest='command', help='sub-command help')
 
     init_parser = subparsers.add_parser("init", help="Create a new FVS repository")
+    init_parser.add_argument('-i', '--ignore', help='patterns to ignore', action='append', default=[], required=False)
     init_parser.add_argument('-p', '--path', help='path to the repository', default=os.getcwd())
 
     commit_parser = subparsers.add_parser("commit", help="Commit changes to the repository")
@@ -24,6 +25,7 @@ def fvs_cli():
     states_parser = subparsers.add_parser("states", help="List all states in the repository")
 
     restore_parser = subparsers.add_parser("restore", help="Restore a state from the repository")
+    restore_parser.add_argument('-i', '--ignore', help='patterns to ignore', action='append', default=[], required=False)
     restore_parser.add_argument('-s', '--state-id', help='state id', required=True)
 
     args = parser.parse_args()
@@ -32,7 +34,7 @@ def fvs_cli():
         repo = FVSRepo(args.path)
 
         with contextlib.suppress(FVSNothingToCommit):
-            repo.commit("Init")
+            repo.commit("Init", args.ignore)
 
         sys.stdout.write("Initialized FVS repository in {}\n".format(args.path))
         sys.exit(0)
@@ -69,7 +71,7 @@ def fvs_cli():
     elif args.command == 'restore':
         repo = FVSRepo(os.getcwd())
         try:
-            repo.restore_state(args.state_id)
+            repo.restore_state(args.state_id, args.ignore)
             sys.stdout.write("Restored state\n")
             sys.exit(0)
         except FVSStateNotFound:
