@@ -39,11 +39,12 @@ def fvs_cli():
             sys.exit(1)
 
         repo = FVSRepo(os.getcwd())
+        message = " ".join(args.args)
 
         try:
             sys.stdout.write("Committing...\n")
-            repo.commit(args.args[0])
-            sys.stdout.write("Committed state {}\n".format(repo.active_state_id))
+            repo.commit(message)
+            sys.stdout.write("Committed state {} ({})\n".format(repo.active_state_id, message))
             sys.exit(0)
         except FVSNothingToCommit:
             sys.stderr.write("Nothing to commit\n")

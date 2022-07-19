@@ -41,9 +41,6 @@ Committed state 1
 > fvs restore 0
 Restored state 0
 
-> fvs states
-- ➔ 0 First state
-
 > fvs active
 Active state is 0
 ```
