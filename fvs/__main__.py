@@ -42,7 +42,7 @@ def fvs_cli():
 
         try:
             repo.commit(args.args[0])
-            sys.stdout.write("Committed state\n")
+            sys.stdout.write("Committed state {}\n".format(repo.active_state_id))
             sys.exit(0)
         except FVSNothingToCommit:
             sys.stderr.write("Nothing to commit\n")
@@ -68,17 +68,19 @@ def fvs_cli():
         if len(args.args) == 0:
             sys.stderr.write("No state id provided\n")
             sys.exit(1)
+        
+        state_id = args.args[0]
 
         repo = FVSRepo(os.getcwd())
         try:
-            repo.restore_state(args.args[0])
+            repo.restore_state(state_id)
             sys.stdout.write("Restored state\n")
             sys.exit(0)
         except FVSStateNotFound:
-            sys.stderr.write("State not found\n")
+            sys.stderr.write("State {} not found\n".format(state_id))
             sys.exit(1)
         except FVSNothingToRestore:
-            sys.stderr.write("Nothing to restore\n")
+            sys.stderr.write("Nothing to restore from state {}\n".format(state_id))
             sys.exit(1)
 
     elif args.command == 'active':
@@ -86,7 +88,7 @@ def fvs_cli():
         if repo.active_state is None:
             sys.stdout.write("No active state\n")
             sys.exit(0)
-        sys.stdout.write("Active state: {}\n".format(repo.active_state_state_id))
+        sys.stdout.write("Active state is {}\n".format(repo.active_state_state_id))
         sys.exit(0) 
 
     else:
