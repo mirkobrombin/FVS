@@ -62,7 +62,7 @@ class FVSRepo:
         repo_conf = os.path.join(self.__repo_path, ".fvs/repo.json")
         with open(repo_conf, "r") as f:
             self.__repo_conf = json.load(f)
-        
+
         """
         JSON store int key as strings, so we need to convert them back to int.
         """

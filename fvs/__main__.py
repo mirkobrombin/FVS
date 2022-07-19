@@ -5,8 +5,8 @@ import contextlib
 from fvs.repo import FVSRepo
 from fvs.exceptions import FVSNothingToCommit, FVSEmptyCommitMessage, FVSStateNotFound, FVSNothingToRestore
 
-
 version = 'FVS 0.1'
+
 
 def fvs_cli():
     parser = argparse.ArgumentParser(description='FVS')
@@ -29,7 +29,7 @@ def fvs_cli():
 
         with contextlib.suppress(FVSNothingToCommit):
             repo.commit("First state")
-            
+
         sys.stdout.write("Initialized FVS repository in {}\n".format(path))
         sys.exit(0)
 
@@ -37,7 +37,7 @@ def fvs_cli():
         if len(args.args) == 0:
             sys.stderr.write("No commit message provided\n")
             sys.exit(1)
-        
+
         repo = FVSRepo(os.getcwd())
 
         try:
@@ -68,7 +68,7 @@ def fvs_cli():
         if len(args.args) == 0:
             sys.stderr.write("No state id provided\n")
             sys.exit(1)
-        
+
         state_id = args.args[0]
 
         repo = FVSRepo(os.getcwd())
@@ -89,12 +89,13 @@ def fvs_cli():
             sys.stdout.write("No active state\n")
             sys.exit(0)
         sys.stdout.write("Active state is {}\n".format(repo.active_state_state_id))
-        sys.exit(0) 
+        sys.exit(0)
 
     else:
         sys.stderr.write("Unknown command: {}\n".format(args.command))
         sys.exit(1)
-        
+
+
 if __name__ == '__main__':
     fvs_cli()
     sys.exit(0)
