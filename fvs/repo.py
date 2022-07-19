@@ -64,8 +64,8 @@ class FVSRepo:
             self.__repo_conf = yaml.safe_load(f)
 
         self.__states = self.__repo_conf["states"]
-        if self.__repo_conf["id"] >= 0:
-            self.__active_state = FVSState(self, self.__repo_conf["id"])
+        if int(self.__repo_conf["id"]) >= 0:
+            self.__active_state = FVSState(self, int(self.__repo_conf["id"]))
         else:
             self.__has_no_states = True
 
