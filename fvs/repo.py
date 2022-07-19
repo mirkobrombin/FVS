@@ -125,7 +125,9 @@ class FVSRepo:
             match any of them. Check if performed on the relative path.
             """
             for pattern in ignore:
-                files = [f for f in files if not FVSPattern.match(pattern, self.__get_relative_path(f))]
+                files = [f for f in files if not FVSPattern.match(
+                    pattern, self.__get_relative_path(os.path.join(root, f))
+                )]
 
             """
             Here we loop through the files and determinate which ones are
@@ -142,6 +144,11 @@ class FVSRepo:
                     "relative_path": _relative_path
                 }
                 unstaged_relative_paths.append(_relative_path)
+
+                for pattern in ignore:
+                    if FVSPattern.match(pattern, _relative_path):
+                        del_active_state_file_key(_md5)
+                        continue
 
                 """
                 If this is the first state, just add all files.
