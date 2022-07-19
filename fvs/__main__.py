@@ -28,7 +28,7 @@ def fvs_cli():
         repo = FVSRepo(path)
 
         with contextlib.suppress(FVSNothingToCommit):
-            repo.commit("First state")
+            repo.commit("Init")
 
         sys.stdout.write("Initialized FVS repository in {}\n".format(path))
         sys.exit(0)
