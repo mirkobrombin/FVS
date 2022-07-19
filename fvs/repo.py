@@ -1,5 +1,5 @@
 import os
-import json
+import orjson
 import shutil
 import logging
 
@@ -47,9 +47,9 @@ class FVSRepo:
                 updated = True
 
         if not os.path.exists(repo_conf):
-            with open(repo_conf, "w") as f:
+            with open(repo_conf, "wb") as f:
                 self.__repo_conf = {"id": -1, "states": {}}
-                json.dump(self.__repo_conf, f, sort_keys=False)
+                f.write(orjson.dumps(self.__repo_conf, f, option=orjson.OPT_NON_STR_KEYS,))
                 updated = True
 
         if updated:
@@ -61,7 +61,7 @@ class FVSRepo:
         """
         repo_conf = os.path.join(self.__repo_path, ".fvs/repo.json")
         with open(repo_conf, "r") as f:
-            self.__repo_conf = json.load(f)
+            self.__repo_conf = orjson.loads(f.read())
 
         """
         JSON store int key as strings, so we need to convert them back to int.
@@ -334,7 +334,7 @@ class FVSRepo:
             raise FVSMissingStateIndex(state_id)
 
         with open(index_path, "r") as f:
-            index = json.load(f)
+            index = orjson.loads(f.read())
 
         if not index:
             raise FVSEmptyStateIndex(state_id)
@@ -408,10 +408,10 @@ class FVSRepo:
         Update the repository configuration.
         """
         repo_conf = os.path.join(self.__repo_path, ".fvs/repo.json")
-        with open(repo_conf, "w") as f:
+        with open(repo_conf, "wb") as f:
             self.__repo_conf["id"] = self.__active_state.state_id
             self.__repo_conf["states"] = self.__states
-            json.dump(self.__repo_conf, f, sort_keys=False)
+            f.write(orjson.dumps(self.__repo_conf, f, option=orjson.OPT_NON_STR_KEYS,))
 
         if self.__has_no_states:
             self.__has_no_states = False

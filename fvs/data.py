@@ -1,5 +1,5 @@
 import os
-import json
+import orjson
 import logging
 
 from fvs.exceptions import FVSDataHasNoState, VFSTransactionAlreadyStarted
@@ -56,23 +56,23 @@ class FVSData:
         default configuration.
         """
         if not os.path.exists(self.__data_conf_path):
-            with open(self.__data_conf_path, "w") as f:
+            with open(self.__data_conf_path, "wb") as f:
                 self.__data_conf = {}
-                json.dump(self.__data_conf, f, sort_keys=False, separators=(',', ':'))
+                f.write(orjson.dumps(self.__data_conf, f, option=orjson.OPT_NON_STR_KEYS,))
 
     def __load_config(self):
         """
         Load the data configuration from the data/data.json file.
         """
         with open(self.__data_conf_path, "r") as f:
-            self.__data_conf = json.load(f)
+            self.__data_conf = orjson.loads(f.read())
 
     def __save_config(self):
         """
         Save the data configuration to the data/data.json file.
         """
-        with open(self.__data_conf_path, "w") as f:
-            json.dump(self.__data_conf, f, sort_keys=False, separators=(',', ':'))
+        with open(self.__data_conf_path, "wb") as f:
+            f.write(orjson.dumps(self.__data_conf, f, option=orjson.OPT_NON_STR_KEYS,))
 
     def complete_transaction(self):
         """

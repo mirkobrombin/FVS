@@ -1,5 +1,5 @@
 import os
-import json
+import orjson
 import logging
 
 from fvs.exceptions import FVSCallerWrongClass, FVSEmptyCommitMessage, FVSWrongUnstagedDict, \
@@ -42,7 +42,7 @@ class FVSState:
             raise FVSStateNotFound(state_id)
 
         with open(os.path.join(self.__state_path, "files.json"), "r") as f:
-            self.__files = json.load(f)
+            self.__files = orjson.loads(f.read())
 
     def commit(
             self,
@@ -163,8 +163,8 @@ class FVSState:
         This method will save the state to the repository.
         """
         state_path = self.__repo.new_state_path_by_id(self.__state_id)
-        with open(os.path.join(state_path, "files.json"), "w") as f:
-            json.dump(self.__files, f, sort_keys=False, separators=(',', ':'))
+        with open(os.path.join(state_path, "files.json"), "wb") as f:
+            f.write(orjson.dumps(self.__files, f, option=orjson.OPT_NON_STR_KEYS,))
 
     def __is_initialized(self):
         """
