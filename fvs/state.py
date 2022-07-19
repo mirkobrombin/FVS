@@ -196,10 +196,10 @@ class FVSState:
             for file in self.__files["added"].values():
                 if file["relative_path"] == relative_path:
                     return file
-                    
-        for _file in self.__files[key].values():
-            if _file["relative_path"] == relative_path:
-                return _file
+        else:
+            for _file in self.__files[key].values():
+                if _file["relative_path"] == relative_path:
+                    return _file
 
         return None
 
