@@ -18,6 +18,11 @@ of deduplication to minimize space consumption.
 ### Dependencies
 FVS only need the `orjson` python package.
 
+### Install
+```bash
+python setup.py install  # --user for user-local install
+```
+
 ### CLI usage
 ```bash
 > mkdir repo ; cd repo
