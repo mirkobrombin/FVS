@@ -41,6 +41,7 @@ def fvs_cli():
         repo = FVSRepo(os.getcwd())
 
         try:
+            sys.stdout.write("Committing...\n")
             repo.commit(args.args[0])
             sys.stdout.write("Committed state {}\n".format(repo.active_state_id))
             sys.exit(0)
