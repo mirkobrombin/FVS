@@ -97,32 +97,32 @@ class FVSState:
         fvs_data = FVSData(self.__repo, self)
 
         for _file in unstaged_files["added"]:
-            fvs_data.add_file(FVSFile(self.__repo, _file["file_name"], _file["md5"], _file["relative_path"]))
-            self.__files["added"][_file["md5"]] = {
+            fvs_data.add_file(FVSFile(self.__repo, _file["file_name"], _file["sha1"], _file["relative_path"]))
+            self.__files["added"][_file["sha1"]] = {
                 "file_name": _file["file_name"],
-                "md5": _file["md5"],
+                "sha1": _file["sha1"],
                 "relative_path": _file["relative_path"],
             }
 
         for _file in unstaged_files["modified"]:
-            fvs_data.add_file(FVSFile(self.__repo, _file["file_name"], _file["md5"], _file["relative_path"]))
-            self.__files["modified"][_file["md5"]] = {
+            fvs_data.add_file(FVSFile(self.__repo, _file["file_name"], _file["sha1"], _file["relative_path"]))
+            self.__files["modified"][_file["sha1"]] = {
                 "file_name": _file["file_name"],
-                "md5": _file["md5"],
+                "sha1": _file["sha1"],
                 "relative_path": _file["relative_path"],
             }
 
         for _file in unstaged_files["removed"]:
-            self.__files["removed"][_file["md5"]] = {
+            self.__files["removed"][_file["sha1"]] = {
                 "file_name": _file["file_name"],
-                "md5": _file["md5"],
+                "sha1": _file["sha1"],
                 "relative_path": _file["relative_path"],
             }
 
         for _file in unstaged_files["intact"]:
-            self.__files["intact"][_file["md5"]] = {
+            self.__files["intact"][_file["sha1"]] = {
                 "file_name": _file["file_name"],
-                "md5": _file["md5"],
+                "sha1": _file["sha1"],
                 "relative_path": _file["relative_path"],
             }
 
@@ -141,20 +141,20 @@ class FVSState:
         fvs_data = FVSData(self.__repo, self)
 
         for _file in self.__files["added"].values():
-            fvs_data.delete_file(FVSFile(self.__repo, _file["file_name"], _file["md5"], _file["relative_path"]))
+            fvs_data.delete_file(FVSFile(self.__repo, _file["file_name"], _file["sha1"], _file["relative_path"]))
 
         for _file in self.__files["modified"].values():
-            fvs_data.delete_file(FVSFile(self.__repo, _file["file_name"], _file["md5"], _file["relative_path"]))
+            fvs_data.delete_file(FVSFile(self.__repo, _file["file_name"], _file["sha1"], _file["relative_path"]))
 
         fvs_data.complete_transaction()
 
-    def has_file(self, md5: str):
+    def has_file(self, sha1: str):
         """
         This method will check if the state has the given file.
         """
-        if md5 in self.__files["added"] \
-                or md5 in self.__files["modified"] \
-                or md5 in self.__files["intact"]:
+        if sha1 in self.__files["added"] \
+                or sha1 in self.__files["modified"] \
+                or sha1 in self.__files["intact"]:
             return True
         return False
 

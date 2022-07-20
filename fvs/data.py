@@ -128,18 +128,18 @@ class FVSData:
 
         self.__set_transaction_type(0)
 
-        if file.md5 not in self.__data_conf.keys():
+        if file.sha1 not in self.__data_conf.keys():
             logger.debug(f"Adding file {file.file_name} to data catalog.")
-            self.__data_conf[file.md5] = {
+            self.__data_conf[file.sha1] = {
                 "file_name": file.file_name,
-                "md5": file.md5,
+                "sha1": file.sha1,
                 "states": [self.__state.state_id],
             }
             self.__transaction.append(file)
 
-        elif self.__state.state_id not in self.__data_conf[file.md5]["states"]:
+        elif self.__state.state_id not in self.__data_conf[file.sha1]["states"]:
             logger.debug(f"Adding state {self.__state.state_id} to file {file.file_name} in data catalog.")
-            self.__data_conf[file.md5]["states"].append(self.__state.state_id)
+            self.__data_conf[file.sha1]["states"].append(self.__state.state_id)
             self.__transaction.append(file)
 
         else:
@@ -163,15 +163,15 @@ class FVSData:
 
         self.__set_transaction_type(1)
 
-        if file.md5 in self.__data_conf.keys():
-            if state_id in self.__data_conf[file.md5]["states"]:
+        if file.sha1 in self.__data_conf.keys():
+            if state_id in self.__data_conf[file.sha1]["states"]:
                 logger.debug(f"Unlinking state {state_id} from file {file.file_name} in data catalog.")
-                self.__data_conf[file.md5]["states"].remove(state_id)
+                self.__data_conf[file.sha1]["states"].remove(state_id)
 
-                if len(self.__data_conf[file.md5]["states"]) == 0:
+                if len(self.__data_conf[file.sha1]["states"]) == 0:
                     logger.debug(
                         f"{state_id} was the last state for file {file.file_name}. Removing file from data catalog.")
-                    del self.__data_conf[file.md5]
+                    del self.__data_conf[file.sha1]
                     self.__transaction.append(file)
 
             else:
@@ -179,13 +179,13 @@ class FVSData:
         else:
             logger.debug(f"File {file.file_name} is not in data catalog. Ignoring.")
 
-    def get_file_location(self, md5: str):
+    def get_file_location(self, sha1: str):
         """
         This method returns the location of a file in the data catalog.
         """
-        if md5 in self.__data_conf.keys():
-            file_name = self.__data_conf[md5]["file_name"]
+        if sha1 in self.__data_conf.keys():
+            file_name = self.__data_conf[sha1]["file_name"]
             return self.get_int_path(file_name)
         else:
-            logging.debug(f"File {md5} is not in data catalog.")
+            logging.debug(f"File {sha1} is not in data catalog.")
             return None

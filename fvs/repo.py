@@ -80,7 +80,7 @@ class FVSRepo:
         ...
         Purpose values:
             0: Committing a new state.
-            1: Restoring a state (will return original md5 for modified files)
+            1: Restoring a state (will return original sha1 for modified files)
         """
         unstaged_files = {
             "count": 0,
@@ -110,10 +110,10 @@ class FVSRepo:
         else:
             active_state_files = {"added": {}, "removed": {}, "modified": {}, "intact": {}}
 
-        def del_active_state_file_key(md5: str):
-            active_state_files["added"].pop(md5, None)
-            active_state_files["modified"].pop(md5, None)
-            active_state_files["intact"].pop(md5, None)
+        def del_active_state_file_key(sha1: str):
+            active_state_files["added"].pop(sha1, None)
+            active_state_files["modified"].pop(sha1, None)
+            active_state_files["intact"].pop(sha1, None)
         
         for root, dirs, files in os.walk(self.__repo_path):
             """
@@ -131,10 +131,10 @@ class FVSRepo:
             for file in files:
                 _full_path = os.path.join(root, file)
                 _relative_path = self.__get_relative_path(os.path.join(root, file))
-                _md5 = FVSUtils.get_md5_hash(_full_path)
+                _sha1 = FVSUtils.get_sha1_hash(_full_path)
                 _entry = {
                     "file_name": file,
-                    "md5": _md5,
+                    "sha1": _sha1,
                     "relative_path": _relative_path
                 }
 
@@ -143,7 +143,7 @@ class FVSRepo:
                 match any of them. Check if performed on the relative path.
                 """
                 if FVSPattern.match(ignore, _relative_path):
-                    del_active_state_file_key(_md5)
+                    del_active_state_file_key(_sha1)
                     continue
 
                 unstaged_relative_paths.append(_relative_path)
@@ -160,18 +160,18 @@ class FVSRepo:
                 Assuming this is not the first state, we need to check if
                 the file is added, removed, modified or intact.
                 """
-                if self.__active_state.has_file(_md5):
+                if self.__active_state.has_file(_sha1):
                     unstaged_files["intact"].append(_entry)
-                    del_active_state_file_key(_md5)
+                    del_active_state_file_key(_sha1)
                 elif orig := self.__active_state.has_relative_path(_relative_path):
                     if purpose == 1:
-                        _md5 = orig["md5"]
+                        _sha1 = orig["sha1"]
                     unstaged_files["modified"].append({
                         "file_name": file,
-                        "md5": _md5,
+                        "sha1": _sha1,
                         "relative_path": _relative_path
                     })
-                    del_active_state_file_key(_md5)
+                    del_active_state_file_key(_sha1)
                     unstaged_files["count"] += 1
                 else:
                     unstaged_files["added"].append(_entry)
@@ -186,7 +186,7 @@ class FVSRepo:
                 if file["relative_path"] not in unstaged_relative_paths:
                     unstaged_files["removed"].append({
                         "file_name": file["file_name"],
-                        "md5": file["md5"],
+                        "sha1": file["sha1"],
                         "relative_path": file["relative_path"]
                     })
                     unstaged_files["count"] += 1
@@ -317,11 +317,11 @@ class FVSRepo:
 
         for file in unstaged_files["modified"]:
             internal_path = fvs_data.get_int_path(file["file_name"])
-            FVSFile(self, file["file_name"], file["md5"], file["relative_path"]).restore(internal_path)
+            FVSFile(self, file["file_name"], file["sha1"], file["relative_path"]).restore(internal_path)
 
         for file in unstaged_files["removed"]:
-            internal_path = fvs_data.get_file_location(file["md5"])
-            FVSFile(self, file["file_name"], file["md5"], file["relative_path"]).restore(internal_path)
+            internal_path = fvs_data.get_file_location(file["sha1"])
+            FVSFile(self, file["file_name"], file["sha1"], file["relative_path"]).restore(internal_path)
 
         self.__update_repo()
 
