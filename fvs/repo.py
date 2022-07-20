@@ -222,7 +222,15 @@ class FVSRepo:
         }
         self.__active_state = state
         self.__update_repo()
-        return state
+        return {
+            "state_id": state.state_id,
+            "message": message,
+            "timestamp": time.time(),
+            "added": len(unstaged_files["added"]),
+            "removed": len(unstaged_files["removed"]),
+            "modified": len(unstaged_files["modified"]),
+            "intact": len(unstaged_files["intact"])
+        }
 
     def delete_state(self, state_id: int, update_repo: bool = True):
         """
