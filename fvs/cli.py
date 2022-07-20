@@ -1,6 +1,7 @@
 import os
 import sys
 import argparse
+import datetime
 import contextlib
 from fvs.repo import FVSRepo
 from fvs.exceptions import FVSNothingToCommit, FVSEmptyCommitMessage, FVSStateNotFound, FVSNothingToRestore
@@ -63,8 +64,11 @@ def fvs_cli():
             sys.exit(0)
 
         for k, v in repo.states.items():
-            sym = "➔" if k == repo.active_state_id else " "
-            sys.stdout.write("- {} {} {}\n".format(sym, k, v))
+            sym = "\033[32m➔" if k == repo.active_state_id else "-"
+            sys.stdout.write(
+                "{} ({}): {}\n\t{}\n\n\033[0m".format(
+                    sym, k, v["message"], datetime.datetime.fromtimestamp(v["timestamp"]))
+            )
 
         sys.exit(0)
 
