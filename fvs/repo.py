@@ -18,14 +18,16 @@ logger = logging.getLogger("fvs.repo")
 class FVSRepo:
     __repo_conf: dict = None
     __has_no_states: bool = False
+    __use_compression = False
     __active_state: 'FVSState' = None
 
-    def __init__(self, repo_path: str):
+    def __init__(self, repo_path: str, use_compression: bool = False):
         """
         Initialize the FVSRepo.
         """
         self.__repo_path = os.path.abspath(repo_path)
         self.__states_path = os.path.join(self.__repo_path, ".fvs/states")
+        self.__use_compression = use_compression
         self.__update_fvs_path()
         self.__load_config()
 
@@ -49,7 +51,7 @@ class FVSRepo:
 
         if not os.path.exists(repo_conf):
             with open(repo_conf, "wb") as f:
-                self.__repo_conf = {"id": -1, "states": {}}
+                self.__repo_conf = {"id": -1, "states": {}, "compression": self.__use_compression}
                 f.write(orjson.dumps(self.__repo_conf, f, option=orjson.OPT_NON_STR_KEYS,))
                 updated = True
 
@@ -73,6 +75,8 @@ class FVSRepo:
             self.__active_state = FVSState(self, int(self.__repo_conf["id"]))
         else:
             self.__has_no_states = True
+        
+        self.__use_compression = self.__repo_conf["compression"]
 
     def get_unstaged_files(self, ignore: list = None, purpose: int = 0):
         """
@@ -483,3 +487,10 @@ class FVSRepo:
         Get the list of states.
         """
         return self.__states
+    
+    @property
+    def has_compression(self):
+        """
+        Get the compression status.
+        """
+        return self.__use_compression

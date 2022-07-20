@@ -1,5 +1,6 @@
 import os
 import shutil
+import tarfile
 import logging
 
 logger = logging.getLogger("fvs.file")
@@ -33,6 +34,10 @@ class FVSFile:
         hash as name to avoid name collisions). This method use copy2 to
         copy the file, so it will preserve the file metadata.
         """
+
+        if self.__repo.has_compression:
+            return self.__compress_copy_to(dest, use_sha1_as_name)
+
         if use_sha1_as_name:
             _dest = os.path.join(dest, self.__sha1)
             _name = self.__sha1
@@ -80,6 +85,9 @@ class FVSFile:
         This method will restore the file, copying from the internal data
         directory to the repo, renaming it to the original name.
         """
+        if self.__repo.has_compression:
+            return self.__compress_restore(internal_path)
+
         file_path = os.path.join(internal_path, self.__sha1)
         if not os.path.exists(file_path):
             logger.debug(f"file {self.__file_name} does not exist, data catalog may be corrupted.")
@@ -94,6 +102,57 @@ class FVSFile:
                 os.path.join(self.__repo.repo_path, relative_path),
                 follow_symlinks=False
             )
+    
+    def __compress_copy_to(self, dest: str, use_sha1_as_name: bool = True):
+        """
+        This method will copy the file to the given destination, compressing it.
+        """
+        if use_sha1_as_name:
+            _dest = os.path.join(dest, self.__sha1)
+            _name = self.__sha1
+        else:
+            _dest = os.path.join(dest, self.__file_name)
+            _name = self.__file_name
+
+        """
+        There never should be a file with the same name and FVSData should
+        already check for duplicates. Anyway, we will check for it here
+        just in case.
+        """
+        if os.path.islink(_dest) or os.path.exists(_dest):
+            logger.debug(f"File {self.__sha1} already exists in {dest}.")
+            return
+
+        """
+        We will move only the first relative path as the file is supposed to
+        be the same in all relative paths.
+        """
+        logger.debug(f"Compressing file {_name} to {dest}")
+        with tarfile.open(_dest, "w:gz") as tar:
+            tar.add(
+                os.path.join(self.__repo.repo_path, self.__relative_paths[0]),
+                arcname=_name
+            )
+    
+    def __compress_restore(self, internal_path: str):
+        """
+        This method will restore the file, decompressing it and copying it
+        to the repo.
+        """
+        file_path = os.path.join(internal_path, self.__sha1)
+        if not os.path.exists(file_path):
+            logger.debug(f"file {self.__file_name} does not exist, data catalog may be corrupted.")
+            return
+
+        for relative_path in self.__relative_paths:
+            dir_name = os.path.dirname(os.path.join(self.__repo.repo_path, relative_path))
+            logger.debug(f"restoring file {self.__file_name}")
+            os.makedirs(dir_name, exist_ok=True)
+            with tarfile.open(file_path, "r:gz") as tar:
+                tar.extract(
+                    _name,
+                    os.path.join(self.__repo.repo_path, relative_path)
+                )
 
     @property
     def file_name(self):

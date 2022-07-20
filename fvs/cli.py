@@ -18,6 +18,7 @@ def fvs_cli():
     init_parser = subparsers.add_parser("init", help="Create a new FVS repository")
     init_parser.add_argument('-i', '--ignore', help='patterns to ignore', action='append', default=[], required=False)
     init_parser.add_argument('-p', '--path', help='path to the repository', default=os.getcwd())
+    init_parser.add_argument('-c', '--use-compression', help='use compression', action='store_true', default=False)
 
     commit_parser = subparsers.add_parser("commit", help="Commit changes to the repository")
     commit_parser.add_argument('-i', '--ignore', help='patterns to ignore', action='append', default=[], required=False)
@@ -32,7 +33,7 @@ def fvs_cli():
     args = parser.parse_args()
 
     if args.command == 'init':
-        repo = FVSRepo(args.path)
+        repo = FVSRepo(args.path, args.use_compression)
 
         with contextlib.suppress(FVSNothingToCommit):
             repo.commit("Init", args.ignore)
