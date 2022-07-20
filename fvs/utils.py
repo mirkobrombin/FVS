@@ -1,3 +1,4 @@
+import os
 import inspect
 import hashlib
 
@@ -20,11 +21,12 @@ class FVSUtils:
         to avoid empty files.
         """
         md5_temp = hashlib.md5()
+        file_name = os.path.basename(path)
         with open(path, "rb") as f:
             while True:
                 buffer = f.read(block_size)
                 if not buffer:
                     break
                 md5_temp.update(buffer)
-        md5_temp.update(path.encode())
+        md5_temp.update(file_name.encode())
         return md5_temp.hexdigest()

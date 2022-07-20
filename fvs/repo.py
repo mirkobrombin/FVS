@@ -138,7 +138,7 @@ class FVSRepo:
             for file in files:
                 _full_path = os.path.join(root, file)
                 _relative_path = self.__get_relative_path(os.path.join(root, file))
-                _md5 = FVSUtils.get_md5_hash(file)
+                _md5 = FVSUtils.get_md5_hash(_full_path)
                 _entry = {
                     "file_name": file,
                     "md5": _md5,
