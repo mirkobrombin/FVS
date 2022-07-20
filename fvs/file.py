@@ -34,34 +34,27 @@ class FVSFile:
         copy the file, so it will preserve the file metadata.
         """
         if use_md5_as_name:
-            """
-            There never should be a file with the same md5 and FVSData should
-            already check for duplicates. Anyway, we will check for it here
-            just in case.
-            """
-            if os.path.exists(os.path.join(dest, self.__md5)):
-                logger.debug(f"File {self.__md5} already exists in {dest}.")
-                return
-            logger.debug(f"copying file {self.__file_name} to {dest} with name {self.__md5}")
-            shutil.copy2(
-                os.path.join(self.__repo.repo_path, self.__relative_path),
-                os.path.join(dest, self.__md5),
-                follow_symlinks=False
-            )
+            _dest = os.path.join(dest, self.__md5)
+            _name = self.__md5
         else:
-            """
-            Same check as above but based on file name.
-            """
-            if os.path.exists(os.path.join(dest, self.__file_name)):
-                logger.debug(f"File {self.__file_name} already exists in {dest}.")
-                return
+            _dest = os.path.join(dest, self.__file_name)
+            _name = self.__file_name
 
-            logger.debug(f"copying file {self.__file_name} to {dest} with name {self.__file_name}")
-            shutil.copy2(
-                os.path.join(self.__repo.repo_path, self.__relative_path),
-                os.path.join(dest, self.__file_name),
-                follow_symlinks=False
-            )
+        """
+        There never should be a file with the same name and FVSData should
+        already check for duplicates. Anyway, we will check for it here
+        just in case.
+        """
+        if os.path.islink(_dest) or os.path.exists(_dest):
+            logger.debug(f"File {self.__md5} already exists in {dest}.")
+            return
+
+        logger.debug(f"Copying file {_name} to {dest}")
+        shutil.copy2(
+            os.path.join(self.__repo.repo_path, self.__relative_path),
+            _dest,
+            follow_symlinks=False
+        )
 
     def remove(self, path: str, use_md5_as_name: bool = True):
         """
