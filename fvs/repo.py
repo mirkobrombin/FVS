@@ -1,4 +1,5 @@
 import os
+import time
 import orjson
 import shutil
 import logging
@@ -215,7 +216,10 @@ class FVSRepo:
         # Create a new state
         state = FVSState(self)
         state.commit(message, unstaged_files)
-        self.__states[state.state_id] = message
+        self.__states[state.state_id] = {
+            "message": message,
+            "timestamp": time.time()
+        }
         self.__active_state = state
         self.__update_repo()
         return state
