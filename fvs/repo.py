@@ -107,12 +107,14 @@ class FVSRepo:
         """
         if not self.__has_no_states:
             active_state_files = self.__active_state.files.copy()
+        else:
+            active_state_files = {"added": {}, "removed": {}, "modified": {}, "intact": {}}
 
         def del_active_state_file_key(md5: str):
             active_state_files["added"].pop(md5, None)
             active_state_files["modified"].pop(md5, None)
             active_state_files["intact"].pop(md5, None)
-
+        
         for root, dirs, files in os.walk(self.__repo_path):
             """
             Here we are excluding the .fvs/ directory from the unstaged files
@@ -120,15 +122,6 @@ class FVSRepo:
             """
             if ".fvs" in root:  # TODO: need to be improved
                 continue
-
-            """
-            Here we loop through the ignore pattern and remove the files that
-            match any of them. Check if performed on the relative path.
-            """
-            for pattern in ignore:
-                files = [f for f in files if not FVSPattern.match(
-                    pattern, self.__get_relative_path(os.path.join(root, f))
-                )]
 
             """
             Here we loop through the files and determinate which ones are
@@ -144,12 +137,16 @@ class FVSRepo:
                     "md5": _md5,
                     "relative_path": _relative_path
                 }
-                unstaged_relative_paths.append(_relative_path)
 
-                for pattern in ignore:
-                    if FVSPattern.match(pattern, _relative_path):
-                        del_active_state_file_key(_md5)
-                        continue
+                """
+                Here we loop through the ignore pattern and remove the files that
+                match any of them. Check if performed on the relative path.
+                """
+                if FVSPattern.match(ignore, _relative_path):
+                    del_active_state_file_key(_md5)
+                    continue
+
+                unstaged_relative_paths.append(_relative_path)
 
                 """
                 If this is the first state, just add all files.
