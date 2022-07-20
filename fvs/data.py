@@ -133,17 +133,18 @@ class FVSData:
             self.__data_conf[file.sha1] = {
                 "file_name": file.file_name,
                 "sha1": file.sha1,
-                "states": [self.__state.state_id],
+                "states": {str(self.__state.state_id): 1}
             }
             self.__transaction.append(file)
 
-        elif self.__state.state_id not in self.__data_conf[file.sha1]["states"]:
+        elif str(self.__state.state_id) not in self.__data_conf[file.sha1]["states"]:
             logger.debug(f"Adding state {self.__state.state_id} to file {file.file_name} in data catalog.")
-            self.__data_conf[file.sha1]["states"].append(self.__state.state_id)
+            self.__data_conf[file.sha1]["states"][str(self.__state.state_id)] = 1
             self.__transaction.append(file)
 
         else:
             logger.debug(f"File {file.file_name} already in data catalog.")
+            self.__data_conf[file.sha1]["states"][str(self.__state.state_id)] += 1
 
     def delete_file(self, file: 'FVSFile', state_id: int = None):
         """
@@ -164,18 +165,23 @@ class FVSData:
         self.__set_transaction_type(1)
 
         if file.sha1 in self.__data_conf.keys():
-            if state_id in self.__data_conf[file.sha1]["states"]:
+            if str(state_id) in self.__data_conf[file.sha1]["states"]:
                 logger.debug(f"Unlinking state {state_id} from file {file.file_name} in data catalog.")
-                self.__data_conf[file.sha1]["states"].remove(state_id)
+                self.__data_conf[file.sha1]["states"][str(state_id)] -= 1
 
-                if len(self.__data_conf[file.sha1]["states"]) == 0:
+                if self.__data_conf[file.sha1]["states"][str(state_id)] == 0:
                     logger.debug(
-                        f"{state_id} was the last state for file {file.file_name}. Removing file from data catalog.")
+                        f"{file.file_name} reached 0 for state {state_id}. Removing state reference.")
+                    del self.__data_conf[file.sha1]["states"][str(state_id)]
+                    self.__transaction.append(file)
+            
+                if len(self.__data_conf[file.sha1]["states"]) == 0:
+                    logger.debug(f"{file.file_name} reached 0 for all states. Removing from data catalog.")
                     del self.__data_conf[file.sha1]
                     self.__transaction.append(file)
 
             else:
-                logger.debug(f"File {file.file_name} has no state {self.__state.state_id}. Ignoring.")
+                logger.debug(f"File {file.file_name} has no state {self.__state.state_id} referenced. Ignoring.")
         else:
             logger.debug(f"File {file.file_name} is not in data catalog. Ignoring.")
 

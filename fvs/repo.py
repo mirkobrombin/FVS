@@ -160,9 +160,8 @@ class FVSRepo:
                 Assuming this is not the first state, we need to check if
                 the file is added, removed, modified or intact.
                 """
-                if self.__active_state.has_file(_sha1):
+                if self.__active_state.has_file(_sha1, _relative_path):
                     unstaged_files["intact"].append(_entry)
-                    del_active_state_file_key(_sha1)
                 elif orig := self.__active_state.has_relative_path(_relative_path):
                     if purpose == 1:
                         _sha1 = orig["sha1"]
@@ -171,8 +170,8 @@ class FVSRepo:
                         "sha1": _sha1,
                         "relative_path": _relative_path
                     })
-                    del_active_state_file_key(_sha1)
                     unstaged_files["count"] += 1
+                    print(f"{_relative_path}is modified")
                 else:
                     unstaged_files["added"].append(_entry)
                     unstaged_files["count"] += 1
@@ -183,13 +182,14 @@ class FVSRepo:
             for file in list(active_state_files["added"].values()) + \
                         list(active_state_files["modified"].values()) + \
                         list(active_state_files["intact"].values()):
-                if file["relative_path"] not in unstaged_relative_paths:
-                    unstaged_files["removed"].append({
-                        "file_name": file["file_name"],
-                        "sha1": file["sha1"],
-                        "relative_path": file["relative_path"]
-                    })
-                    unstaged_files["count"] += 1
+                for relative_path in file["relative_paths"]:
+                    if relative_path not in unstaged_relative_paths:
+                        unstaged_files["removed"].append({
+                            "file_name": file["file_name"],
+                            "sha1": file["sha1"],
+                            "relative_path": relative_path
+                        })
+                        unstaged_files["count"] += 1
 
         return unstaged_files
 
@@ -317,11 +317,11 @@ class FVSRepo:
 
         for file in unstaged_files["modified"]:
             internal_path = fvs_data.get_int_path(file["file_name"])
-            FVSFile(self, file["file_name"], file["sha1"], file["relative_path"]).restore(internal_path)
+            FVSFile(self, file["file_name"], file["sha1"], [file["relative_path"]]).restore(internal_path)
 
         for file in unstaged_files["removed"]:
             internal_path = fvs_data.get_file_location(file["sha1"])
-            FVSFile(self, file["file_name"], file["sha1"], file["relative_path"]).restore(internal_path)
+            FVSFile(self, file["file_name"], file["sha1"], [file["relative_path"]]).restore(internal_path)
 
         self.__update_repo()
 

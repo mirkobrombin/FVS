@@ -8,11 +8,11 @@ logger = logging.getLogger("fvs.file")
 # noinspection DuplicatedCode
 class FVSFile:
 
-    def __init__(self, repo: 'FVSRepo', file_name: str, sha1: str, relative_path: str):
+    def __init__(self, repo: 'FVSRepo', file_name: str, sha1: str, relative_paths: list):
         self.__repo = repo
         self.__file_name = file_name
         self.__sha1 = sha1
-        self.__relative_path = relative_path
+        self.__relative_paths = relative_paths
 
     def is_equal(self, file: 'FVSFile'):
         return self.__sha1 == file.get_sha1()
@@ -21,7 +21,7 @@ class FVSFile:
         return {
             "file_name": self.__file_name,
             "sha1": self.__sha1,
-            "relative_path": self.__relative_path
+            "relative_paths": self.__relative_paths
         }
 
     def copy_to(self, dest: str, use_sha1_as_name: bool = True):
@@ -49,9 +49,13 @@ class FVSFile:
             logger.debug(f"File {self.__sha1} already exists in {dest}.")
             return
 
+        """
+        We will move only the first relative path as the file is supposed to
+        be the same in all relative paths.
+        """
         logger.debug(f"Copying file {_name} to {dest}")
         shutil.copy2(
-            os.path.join(self.__repo.repo_path, self.__relative_path),
+            os.path.join(self.__repo.repo_path, self.__relative_paths[0]),
             _dest,
             follow_symlinks=False
         )
@@ -77,18 +81,19 @@ class FVSFile:
         directory to the repo, renaming it to the original name.
         """
         file_path = os.path.join(internal_path, self.__sha1)
-        dir_name = os.path.dirname(os.path.join(self.__repo.repo_path, self.__relative_path))
+        if not os.path.exists(file_path):
+            logger.debug(f"file {self.__file_name} does not exist, data catalog may be corrupted.")
+            return
 
-        if os.path.exists(file_path):
+        for relative_path in self.__relative_paths:
+            dir_name = os.path.dirname(os.path.join(self.__repo.repo_path, relative_path))
             logger.debug(f"restoring file {self.__file_name}")
             os.makedirs(dir_name, exist_ok=True)
             shutil.copy2(
                 file_path,
-                os.path.join(self.__repo.repo_path, self.__relative_path),
+                os.path.join(self.__repo.repo_path, relative_path),
                 follow_symlinks=False
             )
-        else:
-            logger.debug(f"file {self.__file_name} does not exist, data catalog may be corrupted.")
 
     @property
     def file_name(self):
@@ -99,5 +104,5 @@ class FVSFile:
         return self.__sha1
 
     @property
-    def relative_path(self):
-        return self.__relative_path
+    def relative_paths(self):
+        return self.__relative_paths

@@ -37,13 +37,12 @@ class FVSState:
         """
         self.__state_id = state_id
         self.__state_path = os.path.join(self.__repo.states_path, str(state_id))
-
         if not os.path.exists(self.__state_path):
             raise FVSStateNotFound(state_id)
 
         with open(os.path.join(self.__state_path, "files.json"), "r") as f:
             self.__files = orjson.loads(f.read())
-
+        
     def commit(
             self,
             message: str,
@@ -97,34 +96,48 @@ class FVSState:
         fvs_data = FVSData(self.__repo, self)
 
         for _file in unstaged_files["added"]:
-            fvs_data.add_file(FVSFile(self.__repo, _file["file_name"], _file["sha1"], _file["relative_path"]))
-            self.__files["added"][_file["sha1"]] = {
-                "file_name": _file["file_name"],
-                "sha1": _file["sha1"],
-                "relative_path": _file["relative_path"],
-            }
+            fvs_data.add_file(FVSFile(self.__repo, _file["file_name"], _file["sha1"], [_file["relative_path"]]))
+            if _file["sha1"] in self.__files["added"]:
+                self.__files["added"][_file["sha1"]]["relative_paths"] += [_file["relative_path"]]
+            else:
+                self.__files["added"][_file["sha1"]] = {
+                    "file_name": _file["file_name"],
+                    "sha1": _file["sha1"],
+                    "relative_paths": [_file["relative_path"]],
+                }
 
         for _file in unstaged_files["modified"]:
-            fvs_data.add_file(FVSFile(self.__repo, _file["file_name"], _file["sha1"], _file["relative_path"]))
-            self.__files["modified"][_file["sha1"]] = {
-                "file_name": _file["file_name"],
-                "sha1": _file["sha1"],
-                "relative_path": _file["relative_path"],
-            }
+            fvs_data.add_file(FVSFile(self.__repo, _file["file_name"], _file["sha1"], [_file["relative_path"]]))
+            if _file["sha1"] in self.__files["modified"]:
+                self.__files["modified"][_file["sha1"]]["relative_paths"] += [_file["relative_path"]]
+            else:
+                self.__files["modified"][_file["sha1"]] = {
+                    "file_name": _file["file_name"],
+                    "sha1": _file["sha1"],
+                    "relative_paths": [_file["relative_path"]],
+                }
 
         for _file in unstaged_files["removed"]:
-            self.__files["removed"][_file["sha1"]] = {
-                "file_name": _file["file_name"],
-                "sha1": _file["sha1"],
-                "relative_path": _file["relative_path"],
-            }
+            fvs_data.delete_file(FVSFile(self.__repo, _file["file_name"], _file["sha1"], [_file["relative_path"]]))
+            if _file["sha1"] in self.__files["removed"]:
+                self.__files["removed"][_file["sha1"]]["relative_paths"] += [_file["relative_path"]]
+            else:
+                self.__files["removed"][_file["sha1"]] = {
+                    "file_name": _file["file_name"],
+                    "sha1": _file["sha1"],
+                    "relative_paths": [_file["relative_path"]],
+                }
 
         for _file in unstaged_files["intact"]:
-            self.__files["intact"][_file["sha1"]] = {
-                "file_name": _file["file_name"],
-                "sha1": _file["sha1"],
-                "relative_path": _file["relative_path"],
-            }
+            fvs_data.add_file(FVSFile(self.__repo, _file["file_name"], _file["sha1"], [_file["relative_path"]]))
+            if _file["sha1"] in self.__files["intact"]:
+                self.__files["intact"][_file["sha1"]]["relative_paths"] += [_file["relative_path"]]
+            else:
+                self.__files["intact"][_file["sha1"]] = {
+                    "file_name": _file["file_name"],
+                    "sha1": _file["sha1"],
+                    "relative_paths": [_file["relative_path"]],
+                }
 
         fvs_data.complete_transaction()
         self.__save_state()
@@ -141,21 +154,27 @@ class FVSState:
         fvs_data = FVSData(self.__repo, self)
 
         for _file in self.__files["added"].values():
-            fvs_data.delete_file(FVSFile(self.__repo, _file["file_name"], _file["sha1"], _file["relative_path"]))
+            fvs_data.delete_file(FVSFile(self.__repo, _file["file_name"], _file["sha1"], _file["relative_paths"]))
 
         for _file in self.__files["modified"].values():
-            fvs_data.delete_file(FVSFile(self.__repo, _file["file_name"], _file["sha1"], _file["relative_path"]))
+            fvs_data.delete_file(FVSFile(self.__repo, _file["file_name"], _file["sha1"], _file["relative_paths"]))
 
         fvs_data.complete_transaction()
 
-    def has_file(self, sha1: str):
+    def has_file(self, sha1: str, relative_path: str):
         """
         This method will check if the state has the given file.
         """
-        if sha1 in self.__files["added"] \
-                or sha1 in self.__files["modified"] \
-                or sha1 in self.__files["intact"]:
-            return True
+        if sha1 in self.__files["added"]:
+            if relative_path in self.__files["added"][sha1]["relative_paths"]:
+                return True
+        if sha1 in self.__files["modified"]:
+            if relative_path in self.__files["modified"][sha1]["relative_paths"]:
+                return True
+        if sha1 in self.__files["intact"]:
+            if relative_path in self.__files["intact"][sha1]["relative_paths"]:
+                return True
+                
         return False
 
     def __save_state(self):
@@ -187,20 +206,19 @@ class FVSState:
             raise FVSUnsupportedKey(supported_keys)
 
         if key == "any":
-            for file in self.__files["intact"].values():
-                if file["relative_path"] == relative_path:
+            for file in self.__files["added"].values():
+                if relative_path in file["relative_paths"]:
                     return file
             for file in self.__files["modified"].values():
-                if file["relative_path"] == relative_path:
+                if relative_path in file["relative_paths"]:
                     return file
-            for file in self.__files["added"].values():
-                if file["relative_path"] == relative_path:
+            for file in self.__files["intact"].values():
+                if relative_path in file["relative_paths"]:
                     return file
         else:
             for _file in self.__files[key].values():
-                if _file["relative_path"] == relative_path:
+                if relative_path in _file["relative_paths"]:
                     return _file
-
         return None
 
     @property
