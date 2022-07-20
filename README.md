@@ -49,7 +49,9 @@ python setup.py install  # --user for user-local install
 ### CLI usage
 ```bash
 > mkdir repo ; cd repo
-> fvs init  # or fvs init --path <path>
+> fvs init  
+# with custom path: fvs init --path <path>
+# with compression turned on: fvs init --use-compression
 Initialized FVS repository in /your/location/repo
 
 > touch hello.txt
