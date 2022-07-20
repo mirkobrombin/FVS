@@ -46,8 +46,18 @@ def fvs_cli():
 
         try:
             sys.stdout.write("Committing...\n")
-            repo.commit(message, args.ignore)
-            sys.stdout.write("Committed state {} ({})\n".format(repo.active_state_id, message))
+            res = repo.commit(message, args.ignore)
+            sep = "-" * 10
+            sys.stdout.write("\nCommitted state {}\nMessage: {}\nDate: {}\n{}\nAdded files: {}\nRemoved files: {}\nModified files: {}\nIntact files: {}\n".format(
+                res['state_id'],
+                res['message'],
+                datetime.datetime.fromtimestamp(res['timestamp']).strftime('%Y-%m-%d %H:%M:%S'),
+                sep,
+                res["added"],
+                res["removed"],
+                res["modified"],
+                res["intact"]
+            ))
             sys.exit(0)
         except FVSNothingToCommit:
             sys.stderr.write("Nothing to commit\n")
