@@ -129,7 +129,6 @@ class FVSState:
                 }
 
         for _file in unstaged_files["intact"]:
-            fvs_data.add_file(FVSFile(self.__repo, _file["file_name"], _file["sha1"], [_file["relative_path"]]))
             if _file["sha1"] in self.__files["intact"]:
                 self.__files["intact"][_file["sha1"]]["relative_paths"] += [_file["relative_path"]]
             else:
