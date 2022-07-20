@@ -115,12 +115,12 @@ class FVSRepo:
             active_state_files["modified"].pop(sha1, None)
             active_state_files["intact"].pop(sha1, None)
         
-        for root, dirs, files in os.walk(self.__repo_path):
+        for root, _, files in os.walk(self.__repo_path):
             """
             Here we are excluding the .fvs/ directory from the unstaged files
             because we don't want to invoke the monster of loops.
             """
-            if ".fvs" in root:  # TODO: need to be improved
+            if ".fvs" in root.split(os.sep):
                 continue
 
             """
