@@ -78,7 +78,7 @@ Active state is 0
 ### Lib usage
 
 ```python
-from fvs import FVSRepo
+from fvs.repo import FVSRepo
 
 # create a new repo or point to an existing one
 repo = FVSRepo("just/one/path")
