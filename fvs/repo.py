@@ -135,20 +135,20 @@ class FVSRepo:
             for file in files:
                 _full_path = os.path.join(root, file)
                 _relative_path = self.__get_relative_path(os.path.join(root, file))
-                _sha1 = FVSUtils.get_sha1_hash(_full_path)
-                _entry = {
-                    "file_name": file,
-                    "sha1": _sha1,
-                    "relative_path": _relative_path
-                }
 
                 """
                 Here we loop through the ignore pattern and remove the files that
                 match any of them. Check if performed on the relative path.
                 """
                 if FVSPattern.match(ignore, _relative_path):
-                    del_active_state_file_key(_sha1)
                     continue
+
+                _sha1 = FVSUtils.get_sha1_hash(_full_path)
+                _entry = {
+                    "file_name": file,
+                    "sha1": _sha1,
+                    "relative_path": _relative_path
+                }
 
                 unstaged_relative_paths.append(_relative_path)
 
