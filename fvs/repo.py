@@ -21,14 +21,15 @@ class FVSRepo:
     __use_compression = False
     __active_state: 'FVSState' = None
 
-    def __init__(self, repo_path: str, use_compression: bool = False):
+    def __init__(self, repo_path: str, use_compression: bool = False, no_init: bool = False):
         """
         Initialize the FVSRepo.
         """
         self.__repo_path = os.path.abspath(repo_path)
         self.__states_path = os.path.join(self.__repo_path, ".fvs/states")
         self.__use_compression = use_compression
-        self.__update_fvs_path()
+        if not no_init:
+            self.__update_fvs_path()
         self.__load_config()
 
     def __update_fvs_path(self):
