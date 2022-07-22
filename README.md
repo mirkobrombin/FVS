@@ -24,12 +24,12 @@ With the following images, we can see the basic concept of FVS and how it works.
 In the following examples we will investigate only the first file cell, the
 others follow the same concept and should be easy to understand.
 
-![](data/cnpt_1.png)
+![](https://github.com/mirkobrombin/FVS/raw/main/data/cnpt_1.png)
 
 As you can see, the first file was added, removed and re-added but FVS always 
 kept only one copy of that file as it was always the same version.
 
-![](data/cnpt_2.png)
+![](https://github.com/mirkobrombin/FVS/raw/main/data/cnpt_2.png)
 
 The example above shows a different timeline. In State #4 a new file has been 
 added in the same place as the one in State #1 but since it is a different 

@@ -495,3 +495,11 @@ class FVSRepo:
         Get the compression status.
         """
         return self.__use_compression
+
+    @property
+    def has_no_states(self):
+        """
+        Get the no states status.
+        """
+        return self.__has_no_states
+        
