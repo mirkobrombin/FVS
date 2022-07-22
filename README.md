@@ -2,6 +2,7 @@
 File Versioning System with hash comparison and data storage to create unlinked 
 states that can be deleted
 
+[![CodeFactor](https://www.codefactor.io/repository/github/mirkobrombin/fvs/badge)](https://www.codefactor.io/repository/github/mirkobrombin/fvs)
 [![PyPI version](https://badge.fury.io/py/FVS.svg)](https://badge.fury.io/py/FVS)
 
 > ⚠️ This is currently a Beta.
