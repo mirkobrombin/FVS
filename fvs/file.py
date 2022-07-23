@@ -15,10 +15,10 @@ class FVSFile:
         self.__sha1 = sha1
         self.__relative_paths = relative_paths
 
-    def is_equal(self, file: 'FVSFile'):
+    def is_equal(self, file: 'FVSFile') -> bool:
         return self.__sha1 == file.get_sha1()
 
-    def as_dict(self):
+    def as_dict(self) -> dict:
         return {
             "file_name": self.__file_name,
             "sha1": self.__sha1,
@@ -36,7 +36,8 @@ class FVSFile:
         """
 
         if self.__repo.has_compression:
-            return self.__compress_copy_to(dest, use_sha1_as_name)
+            self.__compress_copy_to(dest, use_sha1_as_name)
+            return
 
         if use_sha1_as_name:
             _dest = os.path.join(dest, self.__sha1)
@@ -86,8 +87,9 @@ class FVSFile:
         directory to the repo, renaming it to the original name.
         """
         if self.__repo.has_compression:
-            return self.__compress_restore(internal_path)
-
+            self.__compress_restore(internal_path)
+            return
+            
         file_path = os.path.join(internal_path, self.__sha1)
         if not os.path.exists(file_path):
             logger.debug(f"file {self.__file_name} does not exist, data catalog may be corrupted.")
@@ -155,13 +157,13 @@ class FVSFile:
                 )
 
     @property
-    def file_name(self):
+    def file_name(self) -> str:
         return self.__file_name
 
     @property
-    def sha1(self):
+    def sha1(self) -> str:
         return self.__sha1
 
     @property
-    def relative_paths(self):
+    def relative_paths(self) -> list:
         return self.__relative_paths

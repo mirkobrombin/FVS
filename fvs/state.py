@@ -160,7 +160,7 @@ class FVSState:
 
         fvs_data.complete_transaction()
 
-    def has_file(self, sha1: str, relative_path: str):
+    def has_file(self, sha1: str, relative_path: str) -> bool:
         """
         This method will check if the state has the given file.
         """
@@ -184,7 +184,7 @@ class FVSState:
         with open(os.path.join(state_path, "files.json"), "wb") as f:
             f.write(orjson.dumps(self.__files, f, option=orjson.OPT_NON_STR_KEYS,))
 
-    def __is_initialized(self):
+    def __is_initialized(self) -> bool:
         """
         This method will check if the state is initialized.
         """
@@ -194,7 +194,7 @@ class FVSState:
             return False
         return True
 
-    def has_relative_path(self, relative_path: str, key: str = "any"):
+    def has_relative_path(self, relative_path: str, key: str = "any") -> bool:
         """
         This method will return the entry from the state files which
         corresponds to the given file name. The 'any' key will check in
@@ -221,21 +221,21 @@ class FVSState:
         return None
 
     @property
-    def files(self):
+    def files(self) -> dict:
         """
         This method will return the files in the state.
         """
         return self.__files
 
     @property
-    def state_id(self):
+    def state_id(self) -> int:
         """
         This method will return the state id.
         """
         return self.__state_id
 
     @property
-    def state_path(self):
+    def state_path(self) -> str:
         """
         This method will return the state path.
         """

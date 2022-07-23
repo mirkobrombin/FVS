@@ -7,7 +7,7 @@ logger = logging.getLogger("fvs.pattern")
 class FVSPattern:
 
     @staticmethod
-    def match(patterns: list, file_name: str):
+    def match(patterns: list, file_name: str) -> bool:
         """
         This method will check if the file_name matches the pattern. It is
         currently just a wrapper around fnmatch.fnmatch. Here just for better

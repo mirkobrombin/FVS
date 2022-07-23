@@ -79,7 +79,7 @@ class FVSRepo:
         
         self.__use_compression = self.__repo_conf["compression"]
 
-    def get_unstaged_files(self, ignore: list = None, purpose: int = 0):
+    def get_unstaged_files(self, ignore: list = None, purpose: int = 0) -> dict:
         """
         Get the unstaged files.
         ...
@@ -204,7 +204,7 @@ class FVSRepo:
 
         return unstaged_files
 
-    def commit(self, message: str, ignore: list = None):
+    def commit(self, message: str, ignore: list = None) -> dict:
         """
         Commit the current state. This is a wrapper around the commit method
         of the FVSState class. A wrapper is used to store the state message
@@ -343,7 +343,7 @@ class FVSRepo:
         """
         shutil.rmtree(state.state_path)
 
-    def is_valid_state(self, state_id: int):
+    def is_valid_state(self, state_id: int) -> bool:
         """
         Check if the state with the given id is valid.
         ...
@@ -368,7 +368,7 @@ class FVSRepo:
 
         return True
 
-    def __get_prior_state_id(self, state_id: int):
+    def __get_prior_state_id(self, state_id: int) -> int:
         """
         Get the id of the prior state.
         ...
@@ -384,7 +384,7 @@ class FVSRepo:
 
         return 0
 
-    def __get_subsequent_state_ids(self, state_id: int):
+    def __get_subsequent_state_ids(self, state_id: int) -> list:
         """
         Get the ids of the subsequent states.
         ...
@@ -401,7 +401,7 @@ class FVSRepo:
 
         return subsequent_states
 
-    def __get_subsequent_state_id(self, state_id: int):
+    def __get_subsequent_state_id(self, state_id: int) -> int:
         """
         Get the id of the subsequent state.
         ...
@@ -417,14 +417,14 @@ class FVSRepo:
 
         return 0
 
-    def __get_relative_path(self, path: str):
+    def __get_relative_path(self, path: str) -> str:
         """
         Get the relative path of the given files.
         """
         repo_root = os.path.dirname(self.__repo_path)
         return os.path.relpath(path, self.__repo_path)
 
-    def get_state_path(self, state_id: int):
+    def get_state_path(self, state_id: int) -> str:
         """
         Get the path of the state with the given id.
         """
@@ -443,7 +443,7 @@ class FVSRepo:
         if self.__has_no_states:
             self.__has_no_states = False
 
-    def new_state_path_by_id(self, state_id: int):
+    def new_state_path_by_id(self, state_id: int) -> str:
         """
         Get the path of the state with the given id.
         ...
@@ -457,21 +457,21 @@ class FVSRepo:
         return state_path
 
     @property
-    def repo_path(self):
+    def repo_path(self) -> str:
         """
         Get the repository path.
         """
         return self.__repo_path
 
     @property
-    def states_path(self):
+    def states_path(self) -> str:
         """
         Get the path of the states.
         """
         return self.__states_path
 
     @property
-    def next_state_id(self):
+    def next_state_id(self) -> int:
         """
         Get the next state id.
         """
@@ -480,7 +480,7 @@ class FVSRepo:
         return list(self.__states)[-1] + 1
 
     @property
-    def active_state_id(self):
+    def active_state_id(self) -> int:
         """
         Get the active state.
         """
@@ -489,21 +489,21 @@ class FVSRepo:
         return self.__active_state.state_id
 
     @property
-    def states(self):
+    def states(self) -> dict:
         """
         Get the list of states.
         """
         return self.__states
     
     @property
-    def has_compression(self):
+    def has_compression(self) -> bool:
         """
         Get the compression status.
         """
         return self.__use_compression
 
     @property
-    def has_no_states(self):
+    def has_no_states(self) -> bool:
         """
         Get the no states status.
         """

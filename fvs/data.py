@@ -1,6 +1,7 @@
 import os
 import orjson
 import logging
+from typing import Union
 
 from fvs.exceptions import FVSDataHasNoState, VFSTransactionAlreadyStarted
 
@@ -92,7 +93,7 @@ class FVSData:
 
         self.__save_config()
 
-    def get_int_path(self, file_name: str):
+    def get_int_path(self, file_name: str) -> str:
         """
         This simple method determines the internal path of a file based
         on the first letter of the file name. Every file starting with
@@ -185,7 +186,7 @@ class FVSData:
         else:
             logger.debug(f"File {file.file_name} is not in data catalog. Ignoring.")
 
-    def get_file_location(self, sha1: str):
+    def get_file_location(self, sha1: str) -> Union[str, None]:
         """
         This method returns the location of a file in the data catalog.
         """
