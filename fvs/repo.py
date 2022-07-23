@@ -144,7 +144,13 @@ class FVSRepo:
                 if FVSPattern.match(ignore, _relative_path):
                     continue
 
-                _sha1 = FVSUtils.get_sha1_hash(_full_path)
+                """
+                Here we calculate the sha1 of the file. It will return None if
+                the file is not accessible or doesn't exist.
+                """
+                if _sha1 := FVSUtils.get_sha1_hash(_full_path) is None:
+                    continue
+                
                 _entry = {
                     "file_name": file,
                     "sha1": _sha1,
