@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='FVS',
-    version='0.3.2',
+    version='0.3.3',
     packages=['fvs'],
     url='https://github.com/mirkobrombin/FVS',
     license='MIT',
