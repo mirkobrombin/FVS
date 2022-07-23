@@ -148,7 +148,8 @@ class FVSRepo:
                 Here we calculate the sha1 of the file. It will return None if
                 the file is not accessible or doesn't exist.
                 """
-                if _sha1 := FVSUtils.get_sha1_hash(_full_path) is None:
+                _sha1 = FVSUtils.get_sha1_hash(_full_path)
+                if _sha1 is None:
                     continue
                 
                 _entry = {
