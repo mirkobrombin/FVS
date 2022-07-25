@@ -5,8 +5,6 @@ states that can be deleted
 [![CodeFactor](https://www.codefactor.io/repository/github/mirkobrombin/fvs/badge)](https://www.codefactor.io/repository/github/mirkobrombin/fvs)
 [![PyPI version](https://badge.fury.io/py/FVS.svg)](https://badge.fury.io/py/FVS)
 
-> ⚠️ This is currently a Beta.
-
 ### Why FVS?
 The main reason for this project is for the purpose of personal knowledge and 
 understanding of the versioning system. The second reason is to make a simple
