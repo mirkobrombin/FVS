@@ -147,13 +147,15 @@ class FVSFile:
             return
 
         for relative_path in self.__relative_paths:
-            dir_name = os.path.dirname(os.path.join(self.__repo.repo_path, relative_path))
+            full_rel_path = os.path.join(self.__repo.repo_path, relative_path)
+            dir_name = os.path.dirname(full_rel_path)
             logger.debug(f"restoring file {self.__file_name}")
             os.makedirs(dir_name, exist_ok=True)
             with tarfile.open(file_path, "r:gz") as tar:
-                tar.extract(
-                    _name,
-                    os.path.join(self.__repo.repo_path, relative_path)
+                tar.extractall(dir_name)
+                os.rename(
+                    os.path.join(dir_name, self.__sha1),
+                    full_rel_path
                 )
 
     @property
