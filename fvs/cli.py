@@ -6,7 +6,7 @@ import contextlib
 from fvs.repo import FVSRepo
 from fvs.exceptions import FVSNothingToCommit, FVSEmptyCommitMessage, FVSStateNotFound, FVSNothingToRestore
 
-version = 'FVS 0.3.3'
+version = 'FVS 0.3.4'
 
 
 def fvs_cli():
