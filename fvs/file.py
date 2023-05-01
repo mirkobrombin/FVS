@@ -27,7 +27,7 @@ class FVSFile:
 
     def copy_to(self, dest: str, use_sha1_as_name: bool = True):
         """
-        This method opy the file to the given destination. Despite it looks 
+        This method copy the file to the given destination. Despite it looks 
         flexible, it is meant to be used only by FVSData to copy files to 
         the appropriate data location, for this reason use_sha1_as_name is 
         set to True by default (data files must be stored with their sha1 
